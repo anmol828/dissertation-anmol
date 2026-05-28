@@ -1,0 +1,38 @@
+﻿@startuml Player Recruitment Sequence Diagram
+actor "Team Owner" as Owner
+participant "Frontend Client" as Client
+participant "Express API Server" as API
+database "MySQL Database" as DB
+actor "Invited Player" as Player
+== Send Recruitment Request ==
+Owner -> Client: Selects player and clicks "Recruit"
+Client -> API: POST /api/recruitment {teamId, playerProfileId}
+API -> DB: Query Team and PlayerProfile
+DB --> API: Returns details
+API -> API: Check ownership (isOwner?)
+alt isOwner == true
+  API -> DB: Create RecruitmentRequest (status: PENDING)
+  DB --> API: Return Request created
+  API --> Client: 201 Created (Request info)
+  Client --> Owner: Show "Invitation Sent Successfully"
+else isOwner == false
+  API --> Client: 403 Forbidden
+  Client --> Owner: Show Error
+end
+== View & Respond to Request ==
+Player -> Client: Opens Notifications
+Client -> API: GET /api/recruitment/incoming
+API -> DB: Query RecruitmentRequests for Player
+DB --> API: Return List
+Client --> Player: Render Incoming Invitations
+Player -> Client: Clicks "Accept Invitation"
+Client -> API: POST /api/recruitment/:id/respond {status: "ACCEPTED"}
+API -> DB: Query and verify Request details
+DB --> API: Return Request
+API -> API: Verify request belongs to Player
+API -> DB: Update Request status to ACCEPTED
+API -> DB: Create TeamMember record (teamId, playerProfileId)
+DB --> API: Return Success
+API --> Client: 200 OK (Updated Request)
+Client --> Player: Show "Joined Team successfully"
+@enduml

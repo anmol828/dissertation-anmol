@@ -1,0 +1,117 @@
+﻿@startuml Futsal ERD
+!theme plain
+hide circle
+skinparam linetype ortho
+entity "User" as user {
+  *id : Int <<generated>>
+  --
+  *name : String
+  *email : String <<unique>>
+  *passwordHash : String
+  *role : UserRole
+  *isActive : Boolean
+  *createdAt : DateTime
+  *updatedAt : DateTime
+}
+entity "PlayerProfile" as pp {
+  *id : Int <<generated>>
+  --
+  *userId : Int <<unique>> <<FK>>
+  *age : Int
+  city : String
+  phone : String
+  profileImageUrl : String
+  *position : PlayerPosition
+  *skill : SkillLevel
+  *preferredFoot : PreferredFoot
+  *status : PlayerStatus
+  preferredPlayTime : String
+  jerseyNumber : Int
+  bio : String
+  *createdAt : DateTime
+  *updatedAt : DateTime
+}
+entity "Venue" as venue {
+  *id : Int <<generated>>
+  --
+  *name : String
+  *slug : String <<unique>>
+  description : String
+  *address : String
+  *city : String
+  phone : String
+  latitude : Float
+  longitude : Float
+  *hourlyRate : Float
+  *adminId : Int <<unique>> <<FK>>
+  *createdAt : DateTime
+  *updatedAt : DateTime
+}
+entity "VenueImage" as vi {
+  *id : Int <<generated>>
+  --
+  *venueId : Int <<FK>>
+  *imageUrl : String
+  caption : String
+  *sortOrder : Int
+}
+entity "Court" as court {
+  *id : Int <<generated>>
+  --
+  *name : String
+  *isActive : Boolean
+  *venueId : Int <<FK>>
+}
+entity "VenuePricingRule" as vpr {
+  *id : Int <<generated>>
+  --
+  *venueId : Int <<FK>>
+  *dayOfWeek : DayOfWeek
+  *startTime : String
+  *endTime : String
+  *hourlyRate : Float
+}
+entity "Booking" as booking {
+  *id : Int <<generated>>
+  --
+  *userId : Int <<FK>>
+  *courtId : Int <<FK>>
+  *startTime : DateTime
+  *endTime : DateTime
+  *totalPrice : Float
+  *status : BookingStatus
+  *createdAt : DateTime
+}
+entity "Team" as team {
+  *id : Int <<generated>>
+  --
+  *name : String
+  *ownerId : Int <<FK>>
+}
+entity "TeamMember" as tm {
+  *id : Int <<generated>>
+  --
+  *teamId : Int <<FK>>
+  *playerProfileId : Int <<FK>>
+}
+entity "RecruitmentRequest" as rr {
+  *id : Int <<generated>>
+  --
+  *teamId : Int <<FK>>
+  *playerProfileId : Int <<FK>>
+  *status : RecruitmentStatus
+  *createdAt : DateTime
+}
+user ||--o| pp
+user ||--o| venue
+user ||--o{ booking
+user ||--o{ team
+venue ||--o{ vi
+venue ||--o{ court
+venue ||--o{ vpr
+court ||--o{ booking
+team ||--o{ tm
+team ||--o{ rr
+pp ||--o{ tm
+pp ||--o{ rr
+@enduml

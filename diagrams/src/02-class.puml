@@ -1,0 +1,160 @@
+﻿@startuml Futsal Class Diagram
+enum UserRole {
+  ADMIN
+  VENUE_ADMIN
+  PLAYER
+  USER
+}
+enum PlayerPosition {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+enum PreferredFoot {
+  RIGHT
+  LEFT
+  BOTH
+}
+enum PlayerStatus {
+  AVAILABLE
+  LOOKING_FOR_TEAM
+  INJURED
+  UNAVAILABLE
+}
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+enum RecruitmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+class User {
+  +Int id
+  +String name
+  +String email
+  +String passwordHash
+  +UserRole role
+  +Boolean isActive
+  +DateTime createdAt
+  +DateTime updatedAt
+  --
+  +register()
+  +login()
+  +getMe()
+}
+class PlayerProfile {
+  +Int id
+  +Int userId
+  +Int age
+  +String city
+  +String phone
+  +String profileImageUrl
+  +PlayerPosition position
+  +SkillLevel skill
+  +PreferredFoot preferredFoot
+  +PlayerStatus status
+  +String preferredPlayTime
+  +Int jerseyNumber
+  +String bio
+  --
+  +updateProfile()
+}
+class Venue {
+  +Int id
+  +String name
+  +String slug
+  +String description
+  +String address
+  +String city
+  +String phone
+  +Float latitude
+  +Float longitude
+  +Float hourlyRate
+  +Int adminId
+  --
+  +createVenue()
+  +updateVenue()
+}
+class Court {
+  +Int id
+  +String name
+  +Boolean isActive
+  +Int venueId
+  --
+  +addCourt()
+  +toggleActive()
+}
+class VenuePricingRule {
+  +Int id
+  +Int venueId
+  +DayOfWeek dayOfWeek
+  +String startTime
+  +String endTime
+  +Float hourlyRate
+}
+class Booking {
+  +Int id
+  +Int userId
+  +Int courtId
+  +DateTime startTime
+  +DateTime endTime
+  +Float totalPrice
+  +BookingStatus status
+  +DateTime createdAt
+  --
+  +createBooking()
+  +cancelBooking()
+}
+class Team {
+  +Int id
+  +String name
+  +Int ownerId
+  --
+  +createTeam()
+  +deleteTeam()
+}
+class TeamMember {
+  +Int id
+  +Int teamId
+  +Int playerProfileId
+}
+class RecruitmentRequest {
+  +Int id
+  +Int teamId
+  +Int playerProfileId
+  +RecruitmentStatus status
+  +DateTime createdAt
+  --
+  +sendRequest()
+  +respondToRequest()
+}
+User "1" -- "0..1" PlayerProfile : has >
+User "1" -- "0..1" Venue : manages >
+User "1" -- "0..*" Booking : books >
+User "1" -- "0..*" Team : owns >
+Venue "1" -- "0..*" Court : contains >
+Venue "1" -- "0..*" VenuePricingRule : has pricing rules >
+Court "1" -- "0..*" Booking : has bookings >
+PlayerProfile "1" -- "0..*" TeamMember : member of >
+Team "1" -- "0..*" TeamMember : includes >
+PlayerProfile "1" -- "0..*" RecruitmentRequest : targeted by >
+Team "1" -- "0..*" RecruitmentRequest : sends >
+@enduml

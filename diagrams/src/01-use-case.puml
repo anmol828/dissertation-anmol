@@ -1,0 +1,32 @@
+﻿@startuml Futsal Use Case Diagram
+left to right direction
+actor "User" as U
+actor "Player" as P
+actor "Venue Admin" as VA
+actor "Admin" as A
+P --|> U
+rectangle "Futsal Booking System" {
+  usecase "Register / Login" as UC1
+  usecase "View Venues & Court Availability" as UC2
+  usecase "Book Court" as UC3
+  usecase "Cancel Booking" as UC4
+  usecase "Manage Player Profile" as UC5
+  usecase "Create & Manage Team" as UC6
+  usecase "Recruit Player (Send Invitation)" as UC7
+  usecase "Respond to Recruitment Request" as UC8
+  usecase "Manage Venue & Courts" as UC9
+  usecase "Configure Dynamic Pricing" as UC10
+  usecase "Manage Users & System" as UC11
+}
+U --> UC1
+U --> UC2
+U --> UC3
+U --> UC4
+P --> UC5
+P --> UC6
+P --> UC7
+P --> UC8
+VA --> UC9
+VA --> UC10
+A --> UC11
+@enduml

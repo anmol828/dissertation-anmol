@@ -1,0 +1,33 @@
+﻿@startuml Court Booking Activity Diagram
+start
+:User selects Court, Start Time, and End Time;
+:System checks if Start Time is in the future;
+if (Is future date?) then (yes)
+  :System checks if duration is multiple of 1 hour;
+  if (Valid duration?) then (yes)
+    :System checks for overlapping confirmed bookings;
+    if (No overlapping bookings?) then (yes)
+      :System retrieves Venue Pricing Rules;
+      :System runs price calculator hour-by-hour;
+      if (All hours covered by pricing rules?) then (yes)
+        :Calculate Total Price;
+        :Create Booking with status CONFIRMED;
+        :Display success and booking receipt;
+        stop
+      else (no)
+        :Show error "Slot outside venue hours";
+        end
+      endif
+    else (yes - overlaps)
+      :Show error "Time slot already booked";
+      end
+    endif
+  else (no)
+    :Show error "Duration must be multiple of 1 hour";
+    end
+  endif
+else (no)
+  :Show error "Booking must be in the future";
+  end
+endif
+@enduml

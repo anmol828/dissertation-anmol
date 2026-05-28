@@ -1,0 +1,271 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  VENUE_ADMIN
+  PLAYER
+  USER
+}
+
+enum PlayerPosition {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum PreferredFoot {
+  RIGHT
+  LEFT
+  BOTH
+}
+
+enum PlayerStatus {
+  AVAILABLE
+  LOOKING_FOR_TEAM
+  INJURED
+  UNAVAILABLE
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum RecruitmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum RecruitmentPostStatus {
+  OPEN
+  CLOSED
+}
+
+model User {
+  id           Int             @id @default(autoincrement())
+  name         String
+  email        String          @unique
+  passwordHash String
+  role         UserRole        @default(USER)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  playerProfile PlayerProfile?
+  managedVenue  Venue?         @relation("VenueAdmin")
+  bookings      Booking[]
+  teams         Team[]         @relation("TeamOwner")
+}
+
+model PlayerProfile {
+  id        Int             @id @default(autoincrement())
+  userId    Int             @unique
+  age       Int
+  city      String?
+  phone     String?
+  profileImageUrl String?
+  position  PlayerPosition
+  skill     SkillLevel
+  preferredFoot PreferredFoot @default(RIGHT)
+  status    PlayerStatus    @default(AVAILABLE)
+  preferredPlayTime String?
+  jerseyNumber Int?
+  bio       String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  user      User            @relation(fields: [userId], references: [id])
+  teamMembers TeamMember[]
+  recruitmentRequests RecruitmentRequest[] @relation("PlayerRecruitment")
+}
+
+model Venue {
+  id         Int       @id @default(autoincrement())
+  name       String
+  slug       String    @unique
+  description String?
+  address    String
+  city       String
+  phone      String?
+  latitude   Float?
+  longitude  Float?
+  mapsUrl    String?
+  hourlyRate Float
+  adminId    Int       @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  admin      User      @relation("VenueAdmin", fields: [adminId], references: [id])
+  courts     Court[]
+  pricingRules VenuePricingRule[]
+  galleryImages VenueImage[]
+  homeTeams  HomeTeam[]
+  legacyTeams Team[]
+}
+
+model VenueImage {
+  id        Int      @id @default(autoincrement())
+  venueId    Int
+  imageUrl   String
+  caption    String?
+  sortOrder  Int      @default(0)
+
+  venue      Venue    @relation(fields: [venueId], references: [id])
+}
+
+model Court {
+  id       Int      @id @default(autoincrement())
+  name     String
+  isActive Boolean  @default(true)
+  venueId  Int
+
+  venue    Venue   @relation(fields: [venueId], references: [id])
+  bookings Booking[]
+}
+
+model VenuePricingRule {
+  id         Int       @id @default(autoincrement())
+  venueId     Int
+  dayOfWeek   DayOfWeek
+  startTime   String
+  endTime     String
+  hourlyRate  Float
+
+  venue       Venue     @relation(fields: [venueId], references: [id])
+}
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  courtId   Int
+  startTime DateTime
+  endTime   DateTime
+  totalPrice Float
+  status    BookingStatus @default(CONFIRMED)
+  createdAt DateTime      @default(now())
+
+  user      User          @relation(fields: [userId], references: [id])
+  court     Court         @relation(fields: [courtId], references: [id])
+}
+
+model Team {
+  id           Int        @id @default(autoincrement())
+  name         String
+  ownerId      Int
+  venueId      Int?
+  logoImageUrl String?
+  captainName  String?
+  skillLevel   SkillLevel?
+  availability String?
+  isHomeTeam   Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  owner   User      @relation("TeamOwner", fields: [ownerId], references: [id])
+  venue   Venue?    @relation(fields: [venueId], references: [id])
+  members TeamMember[]
+  recruitmentPosts RecruitmentPost[]
+  recruitmentRequests RecruitmentRequest[]
+}
+
+model HomeTeam {
+  id           Int        @id @default(autoincrement())
+  venueId      Int
+  name         String
+  imageUrl     String?
+  skillLevel   SkillLevel
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  venue        Venue      @relation(fields: [venueId], references: [id])
+  players      HomeTeamPlayer[]
+  availability HomeTeamAvailability[]
+}
+
+model HomeTeamPlayer {
+  id         Int      @id @default(autoincrement())
+  homeTeamId Int
+  name       String
+  sortOrder  Int      @default(0)
+
+  homeTeam   HomeTeam @relation(fields: [homeTeamId], references: [id])
+}
+
+model HomeTeamAvailability {
+  id         Int       @id @default(autoincrement())
+  homeTeamId Int
+  dayOfWeek  DayOfWeek
+  startTime  String
+  endTime    String
+
+  homeTeam   HomeTeam  @relation(fields: [homeTeamId], references: [id])
+}
+
+model TeamMember {
+  id              Int           @id @default(autoincrement())
+  teamId          Int
+  playerProfileId Int
+  createdAt       DateTime      @default(now())
+
+  team            Team          @relation(fields: [teamId], references: [id])
+  playerProfile   PlayerProfile @relation(fields: [playerProfileId], references: [id])
+}
+
+model RecruitmentPost {
+  id              Int                    @id @default(autoincrement())
+  teamId          Int
+  title           String
+  description     String?
+  neededPosition  PlayerPosition?
+  skillLevel      SkillLevel?
+  visibility      Boolean                @default(true)
+  status          RecruitmentPostStatus  @default(OPEN)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @default(now()) @updatedAt
+
+  team            Team                   @relation(fields: [teamId], references: [id])
+  requests        RecruitmentRequest[]
+}
+
+model RecruitmentRequest {
+  id              Int               @id @default(autoincrement())
+  teamId          Int
+  postId          Int?
+  playerProfileId Int
+  status          RecruitmentStatus @default(PENDING)
+  message         String?
+  responseNote    String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+
+  team            Team              @relation(fields: [teamId], references: [id])
+  post            RecruitmentPost?   @relation(fields: [postId], references: [id])
+  playerProfile   PlayerProfile     @relation("PlayerRecruitment", fields: [playerProfileId], references: [id])
+}
+
