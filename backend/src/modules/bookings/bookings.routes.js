@@ -111,7 +111,7 @@ router.post("/", authenticate, async (req, res, next) => {
 });
 
 // Authenticated: get own bookings
-router.get("/me", authenticate, async (req, res, next) => {
+router.get(["/me", "/my"], authenticate, async (req, res, next) => {
   try {
     const bookings = await prisma.booking.findMany({
       where: { userId: req.user.id },

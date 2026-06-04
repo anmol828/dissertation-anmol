@@ -205,6 +205,29 @@ router.get("/me", authenticate, async (req, res, next) => {
   }
 });
 
+// Authenticated: get own and joined teams
+router.get("/my", authenticate, async (req, res, next) => {
+  try {
+    const playerProfile = await prisma.playerProfile.findUnique({
+      where: { userId: req.user.id }
+    });
+
+    const teams = await prisma.team.findMany({
+      where: {
+        OR: [
+          { ownerId: req.user.id },
+          ...(playerProfile ? [{ members: { some: { playerProfileId: playerProfile.id } } }] : [])
+        ]
+      },
+      include: teamInclude,
+      orderBy: { updatedAt: "desc" }
+    });
+    res.json({ teams });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Owner or venue admin: update team details and player list
 router.put("/:teamId", authenticate, async (req, res, next) => {
   try {

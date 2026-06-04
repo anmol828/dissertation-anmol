@@ -1,934 +1,648 @@
 import React, { useEffect, useState } from "react";
-import AvailabilitySchedule from "../../components/AvailabilitySchedule.jsx";
-import Notice from "../../components/Notice.jsx";
+import { Link } from "react-router-dom";
 import api from "../../lib/api.js";
-import { DAYS_OF_WEEK, SKILL_LEVELS } from "../../lib/constants.js";
+import Notice from "../../components/Notice.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import {
-  getApiErrorMessage,
-  hasNonEmptyValue,
-  hasPositiveNumber,
-  hasValidTimeRange,
-  isValidOptionalUrl,
-  isValidPhone
-} from "../../lib/form-utils.js";
-
-const getInitialDate = () => new Date().toISOString().split("T")[0];
-
-const createEmptyRule = () => ({
-  dayOfWeek: "SUNDAY",
-  startTime: "06:00",
-  endTime: "22:00",
-  hourlyRate: 1000
-});
-
-const createEmptyCourt = () => ({
-  name: "",
-  isActive: true
-});
-
-const createEmptyGalleryImage = () => ({
-  imageUrl: "",
-  caption: ""
-});
-
-const createEmptyHomeTeam = () => ({
-  name: "",
-  imageUrl: "",
-  skillLevel: "INTERMEDIATE",
-  players: [{ name: "" }],
-  availability: [{ dayOfWeek: "SUNDAY", startTime: "18:00", endTime: "20:00" }]
-});
-
-const resolveAssetUrl = (value) => {
-  if (!value) return "";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-  const backendBase = apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
-  return `${backendBase}${value.startsWith("/") ? value : `/${value}`}`;
-};
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from "recharts";
 
 const VenueAdminDashboard = () => {
-  const [venue, setVenue] = useState(null);
-  const [bookings, setBookings] = useState([]);
-  const [homeTeams, setHomeTeams] = useState([]);
-  const [bookingsByCourt, setBookingsByCourt] = useState({});
-  const [scheduleDate, setScheduleDate] = useState(getInitialDate());
-  const [form, setForm] = useState(null);
-  const [teamForm, setTeamForm] = useState(createEmptyHomeTeam());
-  const [editingTeamId, setEditingTeamId] = useState(null);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savingTeam, setSavingTeam] = useState(false);
-  const [uploadingIndex, setUploadingIndex] = useState(null);
-  const [uploadingTeamLogo, setUploadingTeamLogo] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const load = async () => {
+  // Stats and charts
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalBookings: 0,
+    activeCourts: 0,
+    occupancyRate: 0
+  });
+  const [venue, setVenue] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [todayBookings, setTodayBookings] = useState([]);
+  const [allBookings, setAllBookings] = useState([]);
+
+  // Sub-views state for inline quick actions
+  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, bookings, courts, pricing, edit-venue
+  const [saving, setSaving] = useState(false);
+
+  // Forms
+  const [courtForm, setCourtForm] = useState({ name: "", isActive: true });
+  const [pricingRules, setPricingRules] = useState([]);
+  const [venueForm, setVenueForm] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
+    hourlyRate: 1000,
+    description: "",
+    mapsUrl: ""
+  });
+
+  const loadDashboardData = async () => {
     try {
-      const [res, teamsRes] = await Promise.all([
-        api.get("/venues/mine"),
-        api.get("/home-teams/mine").catch(() => ({ data: { teams: [] } }))
+      setLoading(true);
+      setError("");
+
+      const [statsRes, bookingsRes] = await Promise.all([
+        api.get("/venues/my/stats"),
+        api.get("/venues/my/bookings")
       ]);
-      const nextVenue = res.data.venue;
-      const venueBookings = res.data.bookings || [];
 
-      setVenue(nextVenue);
-      setBookings(venueBookings);
-      setHomeTeams(teamsRes.data.teams || []);
-      setBookingsByCourt(
-        venueBookings.reduce((accumulator, booking) => {
-          const courtId = booking.courtId || booking.court?.id;
-          if (!accumulator[courtId]) {
-            accumulator[courtId] = [];
-          }
-          accumulator[courtId].push(booking);
-          return accumulator;
-        }, {})
-      );
+      const data = statsRes.data;
+      setStats(data.stats || { totalRevenue: 0, totalBookings: 0, activeCourts: 0, occupancyRate: 0 });
+      setVenue(data.venue);
+      setChartData(data.revenueChartData || []);
+      setTodayBookings(data.todayBookings || []);
+      setAllBookings(bookingsRes.data.bookings || []);
 
-      setForm({
-        name: nextVenue.name,
-        description: nextVenue.description || "",
-        address: nextVenue.address,
-        city: nextVenue.city,
-        phone: nextVenue.phone || "",
-        mapsUrl: nextVenue.mapsUrl || "",
-        hourlyRate: nextVenue.hourlyRate,
-        galleryImages:
-          nextVenue.galleryImages?.length > 0
-            ? nextVenue.galleryImages.map((image) => ({
-                id: image.id,
-                imageUrl: image.imageUrl,
-                caption: image.caption || ""
-              }))
-            : [createEmptyGalleryImage()],
-        courts: (nextVenue.courts || []).map((court) => ({
-          id: court.id,
-          name: court.name,
-          isActive: court.isActive
-        })),
-        pricingRules:
-          nextVenue.pricingRules?.length > 0
-            ? nextVenue.pricingRules.map((rule) => ({
-                id: rule.id,
-                dayOfWeek: rule.dayOfWeek,
-                startTime: rule.startTime,
-                endTime: rule.endTime,
-                hourlyRate: rule.hourlyRate
-              }))
-            : [createEmptyRule()]
-      });
+      if (data.venue) {
+        setVenueForm({
+          name: data.venue.name || "",
+          phone: data.venue.phone || "",
+          address: data.venue.address || "",
+          city: data.venue.city || "",
+          hourlyRate: data.venue.hourlyRate || 1000,
+          description: data.venue.description || "",
+          mapsUrl: data.venue.mapsUrl || ""
+        });
+        setPricingRules(data.venue.pricingRules || []);
+      }
     } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to load venue panel"));
+      setError(err.response?.data?.message || "Failed to load dashboard data.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    loadDashboardData();
   }, []);
 
-  const handleFieldChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const updateRule = (index, key, value) => {
-    setForm((prev) => {
-      const pricingRules = [...prev.pricingRules];
-      pricingRules[index] = { ...pricingRules[index], [key]: value };
-      return { ...prev, pricingRules };
-    });
-  };
-
-  const updateCourt = (index, key, value) => {
-    setForm((prev) => {
-      const courts = [...prev.courts];
-      courts[index] = { ...courts[index], [key]: value };
-      return { ...prev, courts };
-    });
-  };
-
-  const updateGalleryImage = (index, key, value) => {
-    setForm((prev) => {
-      const galleryImages = [...prev.galleryImages];
-      galleryImages[index] = { ...galleryImages[index], [key]: value };
-      return { ...prev, galleryImages };
-    });
-  };
-
-  const addRule = () => {
-    setForm((prev) => ({
-      ...prev,
-      pricingRules: [...prev.pricingRules, createEmptyRule()]
-    }));
-  };
-
-  const addCourt = () => {
-    setForm((prev) => ({
-      ...prev,
-      courts: [...prev.courts, createEmptyCourt()]
-    }));
-  };
-
-  const addGalleryImage = () => {
-    setForm((prev) => ({
-      ...prev,
-      galleryImages: [...prev.galleryImages, createEmptyGalleryImage()]
-    }));
-  };
-
-  const resetTeamForm = () => {
-    setEditingTeamId(null);
-    setTeamForm(createEmptyHomeTeam());
-  };
-
-  const startEditTeam = (team) => {
-    setEditingTeamId(team.id);
-    setTeamForm({
-      name: team.name || "",
-      imageUrl: team.imageUrl || "",
-      skillLevel: team.skillLevel || "INTERMEDIATE",
-      players: team.players?.length
-        ? team.players.map((player) => ({ name: player.name || "" }))
-        : [{ name: "" }],
-      availability: team.availability?.length
-        ? team.availability.map((slot) => ({
-            dayOfWeek: slot.dayOfWeek,
-            startTime: slot.startTime,
-            endTime: slot.endTime
-          }))
-        : [{ dayOfWeek: "SUNDAY", startTime: "18:00", endTime: "20:00" }]
-    });
-  };
-
-  const updateHomeTeamPlayer = (index, value) => {
-    setTeamForm((prev) => {
-      const players = [...prev.players];
-      players[index] = { ...players[index], name: value };
-      return { ...prev, players };
-    });
-  };
-
-  const addHomeTeamPlayer = () => {
-    setTeamForm((prev) => ({ ...prev, players: [...prev.players, { name: "" }] }));
-  };
-
-  const removeHomeTeamPlayer = (index) => {
-    setTeamForm((prev) => ({
-      ...prev,
-      players: prev.players.filter((_, itemIndex) => itemIndex !== index)
-    }));
-  };
-
-  const updateHomeTeamAvailability = (index, key, value) => {
-    setTeamForm((prev) => {
-      const availability = [...prev.availability];
-      availability[index] = { ...availability[index], [key]: value };
-      return { ...prev, availability };
-    });
-  };
-
-  const addHomeTeamAvailability = () => {
-    setTeamForm((prev) => ({
-      ...prev,
-      availability: [
-        ...prev.availability,
-        { dayOfWeek: "SUNDAY", startTime: "18:00", endTime: "20:00" }
-      ]
-    }));
-  };
-
-  const removeHomeTeamAvailability = (index) => {
-    setTeamForm((prev) => ({
-      ...prev,
-      availability: prev.availability.filter((_, itemIndex) => itemIndex !== index)
-    }));
-  };
-
-  const removeGalleryImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      galleryImages: prev.galleryImages.filter((_, itemIndex) => itemIndex !== index)
-    }));
-  };
-
-  const handleGalleryImageUpload = async (index, file) => {
-    if (!file) return;
-    setUploadingIndex(index);
-    setError("");
-    setSuccess("");
-
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await api.post("/venues/upload-image", formData);
-      updateGalleryImage(index, "imageUrl", res.data.imageUrl || "");
-      setSuccess("Gallery image uploaded.");
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to upload gallery image"));
-    } finally {
-      setUploadingIndex(null);
-    }
-  };
-
-  const handleTeamLogoUpload = async (file) => {
-    if (!file) return;
-    setUploadingTeamLogo(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await api.post("/home-teams/upload-image", formData);
-      setTeamForm((prev) => ({ ...prev, imageUrl: res.data.imageUrl || "" }));
-      setSuccess("Team logo uploaded.");
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to upload team logo"));
-    } finally {
-      setUploadingTeamLogo(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleAddCourtSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
-    setError("");
-    setSuccess("");
-
-    if (!hasNonEmptyValue(form.name) || !hasNonEmptyValue(form.address) || !hasNonEmptyValue(form.city)) {
-      setError("Venue name, address, and city are required.");
-      setSaving(false);
-      return;
-    }
-
-    if (!hasPositiveNumber(form.hourlyRate)) {
-      setError("Base hourly rate must be greater than 0.");
-      setSaving(false);
-      return;
-    }
-
-    if (!isValidPhone(form.phone)) {
-      setError("Please enter a valid phone number.");
-      setSaving(false);
-      return;
-    }
-    if (!isValidOptionalUrl(form.mapsUrl)) {
-      setError("Maps URL must start with http:// or https://.");
-      setSaving(false);
-      return;
-    }
-
-    if (form.courts.some((court) => !hasNonEmptyValue(court.name))) {
-      setError("Every court must have a name.");
-      setSaving(false);
-      return;
-    }
-    if (
-      form.galleryImages.some(
-        (image) => image.imageUrl && !String(image.imageUrl).trim()
-      )
-    ) {
-      setError("Venue gallery image URLs must be valid.");
-      setSaving(false);
-      return;
-    }
-
-    if (
-      form.pricingRules.some(
-        (rule) =>
-          !hasPositiveNumber(rule.hourlyRate) ||
-          !hasValidTimeRange(rule.startTime, rule.endTime)
-      )
-    ) {
-      setError("Each pricing rule needs a valid time range and hourly rate.");
-      setSaving(false);
-      return;
-    }
+    if (!courtForm.name.trim()) return;
 
     try {
-      const payload = {
-        ...form,
-        hourlyRate: Number(form.hourlyRate),
-        galleryImages: form.galleryImages.map((image) => ({
-          ...image,
-          imageUrl: image.imageUrl.trim(),
-          caption: image.caption.trim()
-        })),
-        mapsUrl: form.mapsUrl.trim(),
-        pricingRules: form.pricingRules.map((rule) => ({
-          ...rule,
-          hourlyRate: Number(rule.hourlyRate)
-        }))
-      };
+      setSaving(true);
+      setError("");
+      setSuccess("");
 
-      const res = await api.put(`/venues/${venue.id}`, payload);
+      const updatedCourts = [...(venue?.courts || []), { name: courtForm.name, isActive: courtForm.isActive }];
+      const res = await api.put(`/venues/${venue.id}`, {
+        ...venueForm,
+        courts: updatedCourts,
+        pricingRules
+      });
+
       setVenue(res.data.venue);
-      setSuccess("Venue settings updated.");
-      load();
+      setSuccess("Court added successfully!");
+      setCourtForm({ name: "", isActive: true });
+      await loadDashboardData();
+      setActiveTab("dashboard");
     } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to update venue"));
+      setError(err.response?.data?.message || "Failed to add court.");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleTeamSubmit = async (e) => {
+  const handlePricingSubmit = async (e) => {
     e.preventDefault();
-    setSavingTeam(true);
-    setError("");
-    setSuccess("");
-
-    if (!hasNonEmptyValue(teamForm.name)) {
-      setError("Home team name is required.");
-      setSavingTeam(false);
-      return;
-    }
-    if (teamForm.players.some((player) => !hasNonEmptyValue(player.name))) {
-      setError("Every listed player needs a name.");
-      setSavingTeam(false);
-      return;
-    }
-    if (
-      teamForm.availability.length === 0 ||
-      teamForm.availability.some((slot) => !hasValidTimeRange(slot.startTime, slot.endTime))
-    ) {
-      setError("Add at least one valid availability row.");
-      setSavingTeam(false);
-      return;
-    }
-
     try {
-      const payload = {
-        ...teamForm,
-        name: teamForm.name.trim(),
-        imageUrl: teamForm.imageUrl.trim(),
-        venueId: venue.id,
-        players: teamForm.players.map((player) => ({ name: player.name.trim() }))
-      };
+      setSaving(true);
+      setError("");
+      setSuccess("");
 
-      if (editingTeamId) {
-        await api.put(`/home-teams/${editingTeamId}`, payload);
-        setSuccess("Home team updated.");
-      } else {
-        await api.post("/home-teams", payload);
-        setSuccess("Home team created.");
-      }
+      const res = await api.put(`/venues/${venue.id}`, {
+        ...venueForm,
+        courts: venue.courts,
+        pricingRules
+      });
 
-      resetTeamForm();
-      load();
+      setVenue(res.data.venue);
+      setSuccess("Pricing rules updated successfully!");
+      await loadDashboardData();
+      setActiveTab("dashboard");
     } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to save home team"));
+      setError(err.response?.data?.message || "Failed to update pricing rules.");
     } finally {
-      setSavingTeam(false);
+      setSaving(false);
     }
   };
 
-  if (loading) return <p>Loading venue panel...</p>;
-  if (!form) {
-    return (
-      <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 inline-block">
-        {error || "Venue not found for this account."}
-      </p>
-    );
-  }
+  const handleVenueUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
 
-  const upcomingCount = bookings.filter((booking) => new Date(booking.startTime) > new Date())
-    .length;
+      const res = await api.put(`/venues/${venue.id}`, {
+        ...venueForm,
+        courts: venue.courts,
+        pricingRules
+      });
+
+      setVenue(res.data.venue);
+      setSuccess("Venue profile updated successfully!");
+      await loadDashboardData();
+      setActiveTab("dashboard");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update venue profile.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePricingRuleChange = (index, field, value) => {
+    setPricingRules((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const addPricingRuleRow = () => {
+    setPricingRules((prev) => [
+      ...prev,
+      { dayOfWeek: "MONDAY", startTime: "06:00", endTime: "22:00", hourlyRate: venue?.hourlyRate || 1000 }
+    ]);
+  };
+
+  const removePricingRuleRow = (index) => {
+    setPricingRules((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-NP", { style: "currency", currency: "NPR", maximumFractionDigits: 0 }).format(amount);
+  };
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-xl bg-white border border-slate-200 p-5">
-          <p className="text-sm text-slate-500">Venue</p>
-          <p className="mt-2 text-xl font-semibold">{venue.name}</p>
-        </div>
-        <div className="rounded-xl bg-white border border-slate-200 p-5">
-          <p className="text-sm text-slate-500">Courts</p>
-          <p className="mt-2 text-xl font-semibold">{venue.courts?.length || 0}</p>
-        </div>
-        <div className="rounded-xl bg-white border border-slate-200 p-5">
-          <p className="text-sm text-slate-500">Pricing Rules</p>
-          <p className="mt-2 text-xl font-semibold">{venue.pricingRules?.length || 0}</p>
-        </div>
-        <div className="rounded-xl bg-white border border-slate-200 p-5">
-          <p className="text-sm text-slate-500">Upcoming Bookings</p>
-          <p className="mt-2 text-xl font-semibold">{upcomingCount}</p>
-        </div>
-      </section>
-
-      <AvailabilitySchedule
-        title="Daily Booking Calendar"
-        dateValue={scheduleDate}
-        onDateChange={setScheduleDate}
-        courts={venue.courts || []}
-        bookingsByCourt={bookingsByCourt}
-        pricingRules={venue.pricingRules || []}
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <form onSubmit={handleSubmit} className="rounded-2xl bg-white border border-slate-200 p-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold">Venue Admin Panel</h1>
+    <div className="space-y-8 animate-fadeIn">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+              {venue?.name || "Venue Admin Dashboard"}
+            </h1>
             <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+              onClick={() => setActiveTab(activeTab === "edit-venue" ? "dashboard" : "edit-venue")}
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200"
             >
-              {saving ? "Saving..." : "Save changes"}
+              {activeTab === "edit-venue" ? "Back to Dash" : "Edit Venue"}
             </button>
           </div>
-          <Notice tone="error" className="mt-4">{error}</Notice>
-          <Notice tone="success" className="mt-4">{success}</Notice>
+          <p className="text-slate-500 mt-1">{venue?.address}, {venue?.city}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {activeTab !== "dashboard" && (
+            <button
+              onClick={() => { setActiveTab("dashboard"); setError(""); setSuccess(""); }}
+              className="px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
+            >
+              Dashboard Home
+            </button>
+          )}
+        </div>
+      </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Venue Name</label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleFieldChange}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-              <input
-                type="text"
-                name="phone"
-                value={form.phone}
-                onChange={handleFieldChange}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={form.address}
-                onChange={handleFieldChange}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-              <input
-                type="text"
-                name="city"
-                value={form.city}
-                onChange={handleFieldChange}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Google Maps URL
-              </label>
-              <input
-                type="url"
-                name="mapsUrl"
-                value={form.mapsUrl}
-                onChange={handleFieldChange}
-                placeholder="https://maps.google.com/..."
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Base Hourly Rate
-              </label>
-              <input
-                type="number"
-                min="1"
-                name="hourlyRate"
-                value={form.hourlyRate}
-                onChange={handleFieldChange}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleFieldChange}
-                rows="3"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
+      {error && <Notice tone="error">{error}</Notice>}
+      {success && <Notice tone="success">{success}</Notice>}
+
+      {/* Main Loading State */}
+      {loading ? (
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="h-28 bg-white border border-slate-200 rounded-2xl animate-pulse"></div>
+            ))}
           </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Venue Gallery</h2>
-              <button
-                type="button"
-                onClick={addGalleryImage}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-              >
-                Add photo
-              </button>
-            </div>
-            <div className="mt-4 space-y-3">
-              {form.galleryImages.map((image, index) => (
-                <div
-                  key={image.id || `gallery-${index}`}
-                  className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-[1fr_1fr_auto]"
-                >
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={image.imageUrl}
-                      onChange={(e) => updateGalleryImage(index, "imageUrl", e.target.value)}
-                      placeholder="https://image-url"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        handleGalleryImageUpload(index, e.target.files?.[0]);
-                        e.target.value = "";
-                      }}
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
-                    />
-                    {image.imageUrl && (
-                      <img
-                        src={resolveAssetUrl(image.imageUrl)}
-                        alt={image.caption || `Venue image ${index + 1}`}
-                        className="h-20 w-full rounded-lg object-cover"
-                      />
-                    )}
-                  </div>
+          <div className="h-96 bg-white border border-slate-200 rounded-2xl animate-pulse"></div>
+        </div>
+      ) : (
+        <>
+          {/* Sub-View: Edit Venue Profile */}
+          {activeTab === "edit-venue" && (
+            <form onSubmit={handleVenueUpdate} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <h2 className="text-xl font-bold text-slate-900">Edit Venue Details</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Venue Name</label>
                   <input
                     type="text"
-                    value={image.caption}
-                    onChange={(e) => updateGalleryImage(index, "caption", e.target.value)}
-                    placeholder="Caption"
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                    value={venueForm.name}
+                    onChange={(e) => setVenueForm({ ...venueForm, name: e.target.value })}
+                    required
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
-                  <button
-                    type="button"
-                    onClick={() => removeGalleryImage(index)}
-                    disabled={form.galleryImages.length === 1 || uploadingIndex === index}
-                    className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 disabled:opacity-50"
-                  >
-                    {uploadingIndex === index ? "Uploading..." : "Remove"}
-                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Courts</h2>
-              <button
-                type="button"
-                onClick={addCourt}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-              >
-                Add court
-              </button>
-            </div>
-            <div className="mt-4 space-y-3">
-              {form.courts.map((court, index) => (
-                <div key={court.id || `new-court-${index}`} className="grid gap-3 md:grid-cols-[1fr_auto]">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Contact Phone</label>
                   <input
                     type="text"
-                    value={court.name}
-                    onChange={(e) => updateCourt(index, "name", e.target.value)}
-                    placeholder="Court name"
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                    value={venueForm.phone}
+                    onChange={(e) => setVenueForm({ ...venueForm, phone: e.target.value })}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
-                  <label className="flex items-center gap-2 text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      checked={court.isActive}
-                      onChange={(e) => updateCourt(index, "isActive", e.target.checked)}
-                    />
-                    Active
-                  </label>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Pricing Rules</h2>
-              <button
-                type="button"
-                onClick={addRule}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-              >
-                Add rule
-              </button>
-            </div>
-            <div className="mt-4 space-y-4">
-              {form.pricingRules.map((rule, index) => (
-                <div
-                  key={rule.id || `rule-${index}`}
-                  className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-4"
-                >
-                  <select
-                    value={rule.dayOfWeek}
-                    onChange={(e) => updateRule(index, "dayOfWeek", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  >
-                    {DAYS_OF_WEEK.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Address</label>
                   <input
-                    type="time"
-                    value={rule.startTime}
-                    onChange={(e) => updateRule(index, "startTime", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                    type="text"
+                    value={venueForm.address}
+                    onChange={(e) => setVenueForm({ ...venueForm, address: e.target.value })}
+                    required
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">City</label>
                   <input
-                    type="time"
-                    value={rule.endTime}
-                    onChange={(e) => updateRule(index, "endTime", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                    type="text"
+                    value={venueForm.city}
+                    onChange={(e) => setVenueForm({ ...venueForm, city: e.target.value })}
+                    required
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Base Hourly Rate (NPR)</label>
                   <input
                     type="number"
-                    min="1"
-                    value={rule.hourlyRate}
-                    onChange={(e) => updateRule(index, "hourlyRate", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    placeholder="Hourly rate"
+                    value={venueForm.hourlyRate}
+                    onChange={(e) => setVenueForm({ ...venueForm, hourlyRate: Number(e.target.value) })}
+                    required
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
-              ))}
-            </div>
-          </div>
-        </form>
-
-        <section className="space-y-6">
-          <div className="rounded-2xl bg-white border border-slate-200 p-6">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold">Home Teams</h2>
-              {editingTeamId && (
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Google Maps URL</label>
+                  <input
+                    type="url"
+                    value={venueForm.mapsUrl}
+                    onChange={(e) => setVenueForm({ ...venueForm, mapsUrl: e.target.value })}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Venue Description</label>
+                  <textarea
+                    value={venueForm.description}
+                    onChange={(e) => setVenueForm({ ...venueForm, description: e.target.value })}
+                    rows={4}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                  ></textarea>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
                 <button
                   type="button"
-                  onClick={resetTeamForm}
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
+                  onClick={() => setActiveTab("dashboard")}
+                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
                 >
-                  Cancel edit
+                  Cancel
                 </button>
-              )}
-            </div>
-
-            <form onSubmit={handleTeamSubmit} className="mt-4 space-y-3">
-              <input
-                type="text"
-                value={teamForm.name}
-                onChange={(e) => setTeamForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Team name"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-              <select
-                value={teamForm.skillLevel}
-                onChange={(e) =>
-                  setTeamForm((prev) => ({ ...prev, skillLevel: e.target.value }))
-                }
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              >
-                {SKILL_LEVELS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                value={teamForm.imageUrl}
-                onChange={(e) =>
-                  setTeamForm((prev) => ({ ...prev, imageUrl: e.target.value }))
-                }
-                placeholder="Optional image URL"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="file"
-                accept="image/*"
-                disabled={uploadingTeamLogo}
-                onChange={(e) => {
-                  handleTeamLogoUpload(e.target.files?.[0]);
-                  e.target.value = "";
-                }}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
-              />
-              {teamForm.imageUrl && (
-                <img
-                  src={resolveAssetUrl(teamForm.imageUrl)}
-                  alt={teamForm.name || "Home team"}
-                  className="h-20 w-full rounded-lg object-cover"
-                />
-              )}
-              <div className="space-y-2 rounded-xl border border-slate-200 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-slate-700">Player names</p>
-                  <button
-                    type="button"
-                    onClick={addHomeTeamPlayer}
-                    className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm"
-                  >
-                    Add player
-                  </button>
-                </div>
-                {teamForm.players.map((player, index) => (
-                  <div key={`home-player-${index}`} className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <input
-                      type="text"
-                      value={player.name}
-                      onChange={(e) => updateHomeTeamPlayer(index, e.target.value)}
-                      placeholder="Player name"
-                      className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeHomeTeamPlayer(index)}
-                      disabled={teamForm.players.length === 1}
-                      className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 disabled:opacity-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save Profile"}
+                </button>
               </div>
-              <div className="space-y-2 rounded-xl border border-slate-200 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-slate-700">Availability rows</p>
-                  <button
-                    type="button"
-                    onClick={addHomeTeamAvailability}
-                    className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm"
-                  >
-                    Add slot
-                  </button>
-                </div>
-                {teamForm.availability.map((slot, index) => (
-                  <div key={`home-availability-${index}`} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
-                    <select
-                      value={slot.dayOfWeek}
-                      onChange={(e) => updateHomeTeamAvailability(index, "dayOfWeek", e.target.value)}
-                      className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    >
-                      {DAYS_OF_WEEK.map((day) => (
-                        <option key={day} value={day}>
-                          {day}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="time"
-                      value={slot.startTime}
-                      onChange={(e) => updateHomeTeamAvailability(index, "startTime", e.target.value)}
-                      className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="time"
-                      value={slot.endTime}
-                      onChange={(e) => updateHomeTeamAvailability(index, "endTime", e.target.value)}
-                      className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeHomeTeamAvailability(index)}
-                      disabled={teamForm.availability.length === 1}
-                      className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 disabled:opacity-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="submit"
-                disabled={savingTeam || uploadingTeamLogo}
-                className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
-              >
-                {savingTeam
-                  ? "Saving..."
-                  : editingTeamId
-                    ? "Update home team"
-                    : "Create home team"}
-              </button>
             </form>
+          )}
 
-            <div className="mt-5 space-y-3">
-              {homeTeams.map((team) => (
-                <div key={team.id} className="rounded-xl border border-slate-200 p-4">
-                  <div className="flex gap-3">
-                    <img
-                      src={
-                        resolveAssetUrl(team.imageUrl) ||
-                        "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=300&q=80"
-                      }
-                      alt={team.name}
-                      className="h-14 w-14 rounded-xl object-cover"
+          {/* Sub-View: Add Court */}
+          {activeTab === "courts" && (
+            <form onSubmit={handleAddCourtSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <h2 className="text-xl font-bold text-slate-900">Add Futsal Court</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Court Name</label>
+                  <input
+                    type="text"
+                    value={courtForm.name}
+                    onChange={(e) => setCourtForm({ ...courtForm, name: e.target.value })}
+                    placeholder="e.g. Court A (Indoor)"
+                    required
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                  />
+                </div>
+                <div className="flex items-end pb-2">
+                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={courtForm.isActive}
+                      onChange={(e) => setCourtForm({ ...courtForm, isActive: e.target.checked })}
+                      className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-slate-950">{team.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {team.players?.length || 0} players - {team.skillLevel || "Skill not set"}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {(team.availability || [])
-                          .map((slot) => `${slot.dayOfWeek} ${slot.startTime}-${slot.endTime}`)
-                          .join(", ")}
-                      </p>
+                    Mark Court as Active
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("dashboard")}
+                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {saving ? "Adding..." : "Add Court"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Sub-View: Edit Pricing Rules */}
+          {activeTab === "pricing" && (
+            <form onSubmit={handlePricingSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900">Configure Dynamic Pricing Rules</h2>
+                <button
+                  type="button"
+                  onClick={addPricingRuleRow}
+                  className="px-3 py-1.5 bg-slate-100 text-slate-900 text-xs font-semibold rounded-lg hover:bg-slate-200"
+                >
+                  + Add Rule Row
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {pricingRules.length === 0 ? (
+                  <p className="text-slate-500 text-sm">No rules configured. The base rate will apply to all schedules.</p>
+                ) : (
+                  pricingRules.map((rule, idx) => (
+                    <div key={idx} className="grid gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl sm:grid-cols-5 items-center">
+                      <div>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">Day of Week</label>
+                        <select
+                          value={rule.dayOfWeek}
+                          onChange={(e) => handlePricingRuleChange(idx, "dayOfWeek", e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                        >
+                          {["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"].map((day) => (
+                            <option key={day} value={day}>{day}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">Start Time</label>
+                        <input
+                          type="time"
+                          value={rule.startTime}
+                          onChange={(e) => handlePricingRuleChange(idx, "startTime", e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">End Time</label>
+                        <input
+                          type="time"
+                          value={rule.endTime}
+                          onChange={(e) => handlePricingRuleChange(idx, "endTime", e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">Hourly Rate (NPR)</label>
+                        <input
+                          type="number"
+                          value={rule.hourlyRate}
+                          onChange={(e) => handlePricingRuleChange(idx, "hourlyRate", Number(e.target.value))}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex justify-end pt-4 sm:pt-0">
+                        <button
+                          type="button"
+                          onClick={() => removePricingRuleRow(idx)}
+                          className="px-3 py-1.5 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg text-xs font-semibold"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
+                  ))
+                )}
+              </div>
+
+              <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("dashboard")}
+                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save Pricing Rules"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Sub-View: All Bookings List */}
+          {activeTab === "bookings" && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+              <h2 className="text-xl font-bold text-slate-900">All Booking Records</h2>
+              {allBookings.length === 0 ? (
+                <p className="text-slate-500 text-sm py-8 text-center border border-dashed border-slate-200 rounded-xl">No bookings have been made at this venue yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50/50">
+                      <tr>
+                        <th className="py-3 px-4">User</th>
+                        <th className="py-3 px-4">Court</th>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4">Time Slot</th>
+                        <th className="py-3 px-4">Price</th>
+                        <th className="py-3 px-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {allBookings.map((b) => (
+                        <tr key={b.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">{b.user?.name}</td>
+                          <td className="py-3.5 px-4 font-medium">{b.court?.name}</td>
+                          <td className="py-3.5 px-4">
+                            {new Date(b.startTime).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric"
+                            })}
+                          </td>
+                          <td className="py-3.5 px-4 font-mono text-xs">
+                            {new Date(b.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - {new Date(b.endTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                          </td>
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">{formatCurrency(b.totalPrice)}</td>
+                          <td className="py-3.5 px-4">
+                            <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full uppercase tracking-wider ${
+                              b.status === "CONFIRMED" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                            }`}>
+                              {b.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Core Dashboard Overview */}
+          {activeTab === "dashboard" && (
+            <div className="space-y-8">
+              {/* Stats Row */}
+              <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+                {[
+                  { label: "Total Revenue", value: formatCurrency(stats.totalRevenue), color: "text-emerald-600" },
+                  { label: "Total Bookings", value: stats.totalBookings, color: "text-slate-900" },
+                  { label: "Active Courts", value: stats.activeCourts, color: "text-blue-600" },
+                  { label: "Occupancy Rate", value: `${stats.occupancyRate}%`, color: "text-amber-600" }
+                ].map((stat, idx) => (
+                  <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                    <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Chart Block */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Daily Revenue (Last 30 Days)</h2>
+                {chartData.length === 0 ? (
+                  <div className="h-72 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-400">
+                    No booking revenue data to chart.
+                  </div>
+                ) : (
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis
+                          dataKey="date"
+                          tickLine={false}
+                          axisLine={false}
+                          stroke="#94a3b8"
+                          fontSize={11}
+                          tickFormatter={(str) => {
+                            const parts = str.split("-");
+                            return parts[2] ? `${parts[1]}/${parts[2]}` : str;
+                          }}
+                        />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          stroke="#94a3b8"
+                          fontSize={11}
+                          tickFormatter={(num) => `Rs ${num}`}
+                        />
+                        <Tooltip
+                          contentStyle={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)" }}
+                          labelFormatter={(str) => `Date: ${str}`}
+                          formatter={(value) => [`Rs ${value}`, "Revenue"]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="revenue"
+                          stroke="#10b981"
+                          strokeWidth={2.5}
+                          dot={{ r: 4, strokeWidth: 1.5, fill: "#ffffff" }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
+                {/* Today's Booking Schedule */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Today's Booking Schedule</h2>
+                  
+                  {todayBookings.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-slate-200 rounded-xl">
+                      <p className="text-slate-400 font-medium">No bookings scheduled for today</p>
+                      <p className="text-xs text-slate-400 mt-1">Users bookings today will appear here.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {todayBookings.map((b) => (
+                        <div key={b.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                          <div>
+                            <p className="font-semibold text-slate-900">{b.user?.name}</p>
+                            <p className="text-xs text-slate-500 font-medium mt-0.5">
+                              Court: {b.court?.name} • Rate: {formatCurrency(b.totalPrice)}
+                            </p>
+                          </div>
+                          <div className="mt-2 sm:mt-0 font-mono text-xs font-bold text-slate-700 bg-white border border-slate-250/50 px-3 py-1.5 rounded-lg shadow-sm">
+                            {new Date(b.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - {new Date(b.endTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Actions Panel */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">Quick Actions</h2>
+                  <div className="grid gap-3">
                     <button
-                      type="button"
-                      onClick={() => startEditTeam(team)}
-                      className="self-start rounded-lg bg-slate-100 px-3 py-2 text-sm"
+                      onClick={() => setActiveTab("courts")}
+                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
                     >
-                      Edit
+                      <span>Add New Court</span>
+                      <span className="text-slate-400">&rarr;</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("pricing")}
+                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                    >
+                      <span>Configure Pricing Rules</span>
+                      <span className="text-slate-400">&rarr;</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("bookings")}
+                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                    >
+                      <span>View All Bookings</span>
+                      <span className="text-slate-400">&rarr;</span>
                     </button>
                   </div>
                 </div>
-              ))}
-              {homeTeams.length === 0 && (
-                <p className="text-sm text-slate-500">No home teams created yet.</p>
-              )}
+              </div>
             </div>
-          </div>
-
-          <div className="rounded-2xl bg-white border border-slate-200 p-6">
-            <h2 className="text-xl font-semibold">Recent Bookings</h2>
-            <div className="mt-4 space-y-3">
-              {bookings.map((booking) => (
-                <div key={booking.id} className="rounded-xl border border-slate-200 p-4">
-                  <p className="font-medium">
-                    {booking.user?.name} - {booking.court?.name}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {new Date(booking.startTime).toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Rs. {booking.totalPrice} - {booking.status}
-                  </p>
-                </div>
-              ))}
-              {bookings.length === 0 && (
-                <p className="text-sm text-slate-500">No bookings available yet.</p>
-              )}
-            </div>
-          </div>
-        </section>
-      </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

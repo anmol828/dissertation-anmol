@@ -58,6 +58,86 @@ const validateVenuePayload = ({
 
 router.use(authenticate, authorize("ADMIN"));
 
+router.get("/stats", async (req, res, next) => {
+  try {
+    const [totalUsers, totalVenues, totalBookings] = await Promise.all([
+      prisma.user.count(),
+      prisma.venue.count(),
+      prisma.booking.count({ where: { status: "CONFIRMED" } })
+    ]);
+
+    const revenueSum = await prisma.booking.aggregate({
+      _sum: {
+        totalPrice: true
+      },
+      where: {
+        status: "CONFIRMED"
+      }
+    });
+    const totalRevenue = revenueSum._sum.totalPrice || 0;
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthlyRevenueChartData = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+      const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+
+      const monthlySum = await prisma.booking.aggregate({
+        _sum: {
+          totalPrice: true
+        },
+        where: {
+          status: "CONFIRMED",
+          startTime: { gte: startOfMonth, lte: endOfMonth }
+        }
+      });
+
+      const label = `${monthNames[d.getMonth()]} ${d.getFullYear().toString().slice(-2)}`;
+      monthlyRevenueChartData.push({
+        month: label,
+        revenue: monthlySum._sum.totalPrice || 0
+      });
+    }
+
+    res.json({
+      stats: {
+        totalUsers,
+        totalVenues,
+        totalBookings,
+        totalRevenue
+      },
+      monthlyRevenueChartData
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/users/:id/toggle", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const user = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { isActive: !user.isActive }
+    });
+
+    res.json({ user: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/dashboard", async (req, res, next) => {
   try {
     const [users, players, venueAdmins, venues, bookings] = await Promise.all([

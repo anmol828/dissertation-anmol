@@ -19,8 +19,8 @@ const Layout = ({ children }) => {
   const roleLinks = [];
   if (user) {
     if (user.role === "PLAYER") {
+      roleLinks.push({ to: "/player/dashboard", label: "Dashboard" });
       roleLinks.push({ to: "/venues", label: "Venue" });
-
       roleLinks.push({ to: "/bookings", label: "Bookings" });
       roleLinks.push({ to: "/player/profile", label: "Player Profile" });
       roleLinks.push({ to: "/teams", label: "Teams" });
@@ -32,9 +32,9 @@ const Layout = ({ children }) => {
       roleLinks.push({ to: "/admin", label: "Admin Panel" });
     }
     else{
+      roleLinks.push({ to: "/player/dashboard", label: "Dashboard" });
       roleLinks.push({ to: "/bookings", label: "Bookings" });
       roleLinks.push({ to: "/venues", label: "Venues" });
-
     }
   }
 

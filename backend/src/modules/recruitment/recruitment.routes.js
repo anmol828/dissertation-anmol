@@ -268,13 +268,13 @@ router.post("/", authenticate, async (req, res, next) => {
 });
 
 // Player: view incoming recruitment requests
-router.get("/incoming", authenticate, async (req, res, next) => {
+router.get(["/incoming", "/my-requests"], authenticate, async (req, res, next) => {
   try {
     const profile = await prisma.playerProfile.findUnique({
       where: { userId: req.user.id }
     });
     if (!profile) {
-      return res.status(400).json({ message: "No player profile found" });
+      return res.json({ requests: [] }); // return empty requests if player profile does not exist instead of 400
     }
 
     const requests = await prisma.recruitmentRequest.findMany({
@@ -311,7 +311,7 @@ router.get("/outgoing", authenticate, async (req, res, next) => {
 });
 
 // Player: respond to recruitment request (accept/reject)
-router.post("/:id/respond", authenticate, async (req, res, next) => {
+const respondToRecruitmentRequest = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     const { status, responseNote } = req.body;
@@ -370,7 +370,9 @@ router.post("/:id/respond", authenticate, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+};
+router.post("/:id/respond", authenticate, respondToRecruitmentRequest);
+router.patch("/:id/respond", authenticate, respondToRecruitmentRequest);
 
 // Team owner: approve/reject a player application
 router.post("/:id/decision", authenticate, async (req, res, next) => {

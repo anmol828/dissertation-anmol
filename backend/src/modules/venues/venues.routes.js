@@ -132,6 +132,178 @@ router.post(
   }
 );
 
+// Venue admin: own venue bookings
+router.get(
+  "/my/bookings",
+  authenticate,
+  authorize("VENUE_ADMIN", "ADMIN"),
+  async (req, res, next) => {
+    try {
+      const venue = await prisma.venue.findFirst({
+        where: req.user.role === "ADMIN" ? {} : { adminId: req.user.id }
+      });
+      if (!venue) {
+        return res.status(404).json({ message: "Venue not found" });
+      }
+
+      const bookings = await prisma.booking.findMany({
+        where: {
+          court: {
+            venueId: venue.id
+          }
+        },
+        include: {
+          court: true,
+          user: {
+            select: { id: true, name: true, email: true, role: true }
+          }
+        },
+        orderBy: { startTime: "desc" }
+      });
+
+      res.json({ bookings });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// Venue admin: own venue statistics and chart data
+router.get(
+  "/my/stats",
+  authenticate,
+  authorize("VENUE_ADMIN", "ADMIN"),
+  async (req, res, next) => {
+    try {
+      const venue = await prisma.venue.findFirst({
+        where: req.user.role === "ADMIN" ? {} : { adminId: req.user.id },
+        include: {
+          courts: true
+        }
+      });
+      if (!venue) {
+        return res.status(404).json({ message: "Venue not found" });
+      }
+
+      // Total bookings
+      const totalBookings = await prisma.booking.count({
+        where: {
+          court: { venueId: venue.id }
+        }
+      });
+
+      // Total revenue (sum of confirmed bookings totalPrice)
+      const revenueSum = await prisma.booking.aggregate({
+        _sum: {
+          totalPrice: true
+        },
+        where: {
+          court: { venueId: venue.id },
+          status: "CONFIRMED"
+        }
+      });
+      const totalRevenue = revenueSum._sum.totalPrice || 0;
+
+      // Active courts count
+      const activeCourts = venue.courts.filter(c => c.isActive).length;
+
+      // Occupancy rate (%) this month
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+      const bookingsThisMonth = await prisma.booking.findMany({
+        where: {
+          court: { venueId: venue.id },
+          status: "CONFIRMED",
+          startTime: { gte: startOfMonth, lte: endOfMonth }
+        }
+      });
+
+      let bookedHours = 0;
+      bookingsThisMonth.forEach((b) => {
+        const durationMs = new Date(b.endTime).getTime() - new Date(b.startTime).getTime();
+        bookedHours += durationMs / (1000 * 60 * 60);
+      });
+
+      const daysInMonth = endOfMonth.getDate();
+      const totalCapacityHours = activeCourts * 14 * daysInMonth; // 14 operating hours per day
+      const occupancyRate = totalCapacityHours > 0
+        ? Math.min(100, Math.round((bookedHours / totalCapacityHours) * 100))
+        : 0;
+
+      // Revenue chart data: last 30 days of daily revenue
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+      const bookingsLast30Days = await prisma.booking.findMany({
+        where: {
+          court: { venueId: venue.id },
+          status: "CONFIRMED",
+          startTime: { gte: thirtyDaysAgo }
+        }
+      });
+
+      const dailyRevenueMap = {};
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateString = d.toISOString().split("T")[0];
+        dailyRevenueMap[dateString] = 0;
+      }
+
+      bookingsLast30Days.forEach((b) => {
+        // Use UTC date string or split local date to avoid timezone offset mismatches
+        const dStr = new Date(b.startTime).toISOString().split("T")[0];
+        if (dailyRevenueMap[dStr] !== undefined) {
+          dailyRevenueMap[dStr] += b.totalPrice;
+        }
+      });
+
+      const revenueChartData = Object.keys(dailyRevenueMap).map((date) => ({
+        date,
+        revenue: dailyRevenueMap[date]
+      })).sort((a, b) => a.date.localeCompare(b.date));
+
+      // Today's schedule: timeline bookings for today
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+
+      const bookingsToday = await prisma.booking.findMany({
+        where: {
+          court: { venueId: venue.id },
+          status: "CONFIRMED",
+          startTime: { gte: startOfToday, lte: endOfToday }
+        },
+        include: {
+          court: true,
+          user: {
+            select: { id: true, name: true }
+          }
+        },
+        orderBy: { startTime: "asc" }
+      });
+
+      res.json({
+        stats: {
+          totalRevenue,
+          totalBookings,
+          activeCourts,
+          occupancyRate
+        },
+        venue,
+        revenueChartData,
+        todayBookings: bookingsToday
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 // Venue admin: own venue dashboard
 router.get(
   "/mine",

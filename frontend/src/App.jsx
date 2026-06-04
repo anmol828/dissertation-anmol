@@ -10,6 +10,7 @@ import Search from "./pages/Search.jsx";
 import MyBookings from "./pages/Bookings/MyBookings.jsx";
 import PlayerProfile from "./pages/Player/PlayerProfile.jsx";
 import PlayerDetail from "./pages/Player/PlayerDetail.jsx";
+import PlayerDashboard from "./pages/Player/PlayerDashboard.jsx";
 import TeamsPage from "./pages/Teams/TeamsPage.jsx";
 import VenueAdminDashboard from "./pages/VenueAdmin/VenueAdminDashboard.jsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
@@ -62,6 +63,15 @@ const App = () => {
           element={
             <RequireAuth>
               <MyBookings />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/player/dashboard"
+          element={
+            <RequireAuth roles={["PLAYER", "USER"]}>
+              <PlayerDashboard />
             </RequireAuth>
           }
         />

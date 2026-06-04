@@ -1,758 +1,263 @@
 import React, { useEffect, useState } from "react";
-import Notice from "../../components/Notice.jsx";
 import api from "../../lib/api.js";
-import { DAYS_OF_WEEK } from "../../lib/constants.js";
+import Notice from "../../components/Notice.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import {
-  getApiErrorMessage,
-  hasNonEmptyValue,
-  hasPositiveNumber,
-  hasValidTimeRange,
-  isValidOptionalUrl,
-  isStrongEnoughPassword,
-  isValidEmail,
-  isValidPhone
-} from "../../lib/form-utils.js";
-
-const createEmptyRule = () => ({
-  dayOfWeek: "SUNDAY",
-  startTime: "06:00",
-  endTime: "22:00",
-  hourlyRate: 1000
-});
-
-const createInitialForm = () => ({
-  ownerName: "",
-  ownerEmail: "",
-  ownerPassword: "",
-  venueName: "",
-  description: "",
-  address: "",
-  city: "",
-  phone: "",
-  mapsUrl: "",
-  hourlyRate: 1000,
-  galleryImages: [{ imageUrl: "", caption: "" }],
-  courts: [{ name: "Main Court", isActive: true }],
-  pricingRules: [createEmptyRule()]
-});
-
-const resolveAssetUrl = (value) => {
-  if (!value) return "";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-  const backendBase = apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
-  return `${backendBase}${value.startsWith("/") ? value : `/${value}`}`;
-};
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from "recharts";
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [venues, setVenues] = useState([]);
-  const [form, setForm] = useState(createInitialForm());
-  const [editingVenueId, setEditingVenueId] = useState(null);
-  const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState(null);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploadingIndex, setUploadingIndex] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const isEditing = editingVenueId !== null;
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalVenues: 0,
+    totalBookings: 0,
+    totalRevenue: 0
+  });
+  const [chartData, setChartData] = useState([]);
+  const [usersList, setUsersList] = useState([]);
+  const [venuesList, setVenuesList] = useState([]);
 
-  const load = async () => {
+  const loadAdminData = async () => {
     try {
-      const [dashboardRes, usersRes, venuesRes] = await Promise.all([
-        api.get("/admin/dashboard"),
+      setLoading(true);
+      setError("");
+
+      const [statsRes, usersRes, venuesRes] = await Promise.all([
+        api.get("/admin/stats"),
         api.get("/admin/users"),
         api.get("/admin/venues")
       ]);
 
-      setStats(dashboardRes.data.stats);
-      setUsers(usersRes.data.users || []);
-      setVenues(venuesRes.data.venues || []);
+      setStats(statsRes.data.stats || { totalUsers: 0, totalVenues: 0, totalBookings: 0, totalRevenue: 0 });
+      setChartData(statsRes.data.monthlyRevenueChartData || []);
+      setUsersList(usersRes.data.users || []);
+      setVenuesList(venuesRes.data.venues || []);
     } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to load admin panel"));
+      setError(err.response?.data?.message || "Failed to load admin stats and list records.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    loadAdminData();
   }, []);
 
-  const resetForm = () => {
-    setEditingVenueId(null);
-    setForm(createInitialForm());
-  };
-
-  const startEdit = (venue) => {
-    setError("");
-    setSuccess("");
-    setEditingVenueId(venue.id);
-    setForm({
-      ownerName: venue.admin?.name || "",
-      ownerEmail: venue.admin?.email || "",
-      ownerPassword: "",
-      venueName: venue.name || "",
-      description: venue.description || "",
-      address: venue.address || "",
-      city: venue.city || "",
-      phone: venue.phone || "",
-      mapsUrl: venue.mapsUrl || "",
-      hourlyRate: venue.hourlyRate || 1000,
-      galleryImages:
-        venue.galleryImages?.length > 0
-          ? venue.galleryImages.map((image) => ({
-              id: image.id,
-              imageUrl: image.imageUrl,
-              caption: image.caption || ""
-            }))
-          : [{ imageUrl: "", caption: "" }],
-      courts:
-        venue.courts?.length > 0
-          ? venue.courts.map((court) => ({
-              id: court.id,
-              name: court.name,
-              isActive: court.isActive
-            }))
-          : [{ name: "Main Court", isActive: true }],
-      pricingRules:
-        venue.pricingRules?.length > 0
-          ? venue.pricingRules.map((rule) => ({
-              id: rule.id,
-              dayOfWeek: rule.dayOfWeek,
-              startTime: rule.startTime,
-              endTime: rule.endTime,
-              hourlyRate: rule.hourlyRate
-            }))
-          : [createEmptyRule()]
-    });
-  };
-
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const updateCourt = (index, key, value) => {
-    setForm((prev) => {
-      const courts = [...prev.courts];
-      courts[index] = { ...courts[index], [key]: value };
-      return { ...prev, courts };
-    });
-  };
-
-  const updateGalleryImage = (index, key, value) => {
-    setForm((prev) => {
-      const galleryImages = [...prev.galleryImages];
-      galleryImages[index] = { ...galleryImages[index], [key]: value };
-      return { ...prev, galleryImages };
-    });
-  };
-
-  const updateRule = (index, key, value) => {
-    setForm((prev) => {
-      const pricingRules = [...prev.pricingRules];
-      pricingRules[index] = { ...pricingRules[index], [key]: value };
-      return { ...prev, pricingRules };
-    });
-  };
-
-  const addCourt = () => {
-    setForm((prev) => ({
-      ...prev,
-      courts: [...prev.courts, { name: "", isActive: true }]
-    }));
-  };
-
-  const addGalleryImage = () => {
-    setForm((prev) => ({
-      ...prev,
-      galleryImages: [...prev.galleryImages, { imageUrl: "", caption: "" }]
-    }));
-  };
-
-  const removeGalleryImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      galleryImages: prev.galleryImages.filter((_, itemIndex) => itemIndex !== index)
-    }));
-  };
-
-  const removeCourt = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      courts: prev.courts.filter((_, itemIndex) => itemIndex !== index)
-    }));
-  };
-
-  const addRule = () => {
-    setForm((prev) => ({
-      ...prev,
-      pricingRules: [...prev.pricingRules, createEmptyRule()]
-    }));
-  };
-
-  const removeRule = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      pricingRules: prev.pricingRules.filter((_, itemIndex) => itemIndex !== index)
-    }));
-  };
-
-  const handleGalleryImageUpload = async (index, file) => {
-    if (!file) return;
-    setUploadingIndex(index);
-    setError("");
-    setSuccess("");
-
+  const handleToggleUserStatus = async (userId) => {
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await api.post("/venues/upload-image", formData);
-      updateGalleryImage(index, "imageUrl", res.data.imageUrl || "");
-      setSuccess("Gallery image uploaded.");
+      setActionLoading(true);
+      setError("");
+      setSuccess("");
+
+      const res = await api.patch(`/admin/users/${userId}/toggle`);
+      setSuccess(`User status for ${res.data.user?.name} has been toggled!`);
+      await loadAdminData();
     } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to upload gallery image"));
+      setError(err.response?.data?.message || "Failed to toggle user status.");
     } finally {
-      setUploadingIndex(null);
+      setActionLoading(false);
     }
   };
 
-  const validateForm = () => {
-    if (
-      !hasNonEmptyValue(form.ownerName) ||
-      !hasNonEmptyValue(form.venueName) ||
-      !hasNonEmptyValue(form.address) ||
-      !hasNonEmptyValue(form.city)
-    ) {
-      return "Owner name, venue name, address, and city are required.";
-    }
-    if (!isValidEmail(form.ownerEmail)) {
-      return "Please enter a valid venue owner email address.";
-    }
-    if (!isEditing && !isStrongEnoughPassword(form.ownerPassword)) {
-      return "Temporary password must be at least 6 characters long.";
-    }
-    if (isEditing && form.ownerPassword && !isStrongEnoughPassword(form.ownerPassword)) {
-      return "Updated password must be at least 6 characters long.";
-    }
-    if (!hasPositiveNumber(form.hourlyRate)) {
-      return "Base hourly rate must be greater than 0.";
-    }
-    if (!isValidPhone(form.phone)) {
-      return "Please enter a valid venue phone number.";
-    }
-    if (!isValidOptionalUrl(form.mapsUrl)) {
-      return "Maps URL must start with http:// or https://.";
-    }
-    if (form.courts.length === 0 || form.courts.some((court) => !hasNonEmptyValue(court.name))) {
-      return "At least one valid court name is required.";
-    }
-    if (
-      form.galleryImages.some(
-        (image) => image.imageUrl && !String(image.imageUrl).trim()
-      )
-    ) {
-      return "Venue gallery image URLs must be valid.";
-    }
-    if (
-      form.pricingRules.length === 0 ||
-      form.pricingRules.some(
-        (rule) =>
-          !hasPositiveNumber(rule.hourlyRate) ||
-          !hasValidTimeRange(rule.startTime, rule.endTime)
-      )
-    ) {
-      return "Each pricing rule needs a valid time range and hourly rate.";
-    }
-
-    return "";
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-NP", { style: "currency", currency: "NPR", maximumFractionDigits: 0 }).format(amount);
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setError("");
-    setSuccess("");
-
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      setSaving(false);
-      return;
-    }
-
-    const payload = {
-      ...form,
-      ownerName: form.ownerName.trim(),
-      ownerEmail: form.ownerEmail.trim(),
-      venueName: form.venueName.trim(),
-      address: form.address.trim(),
-      city: form.city.trim(),
-      phone: form.phone.trim(),
-      mapsUrl: form.mapsUrl.trim(),
-      description: form.description.trim(),
-      hourlyRate: Number(form.hourlyRate),
-      galleryImages: form.galleryImages.map((image) => ({
-        ...image,
-        imageUrl: image.imageUrl.trim(),
-        caption: image.caption.trim()
-      })),
-      courts: form.courts.map((court) => ({
-        ...court,
-        name: court.name.trim()
-      })),
-      pricingRules: form.pricingRules.map((rule) => ({
-        ...rule,
-        hourlyRate: Number(rule.hourlyRate)
-      }))
-    };
-
-    try {
-      if (isEditing) {
-        await api.put(`/admin/venues/${editingVenueId}`, payload);
-        setSuccess("Venue and venue owner updated successfully.");
-      } else {
-        await api.post("/admin/venues", payload);
-        setSuccess("Venue and venue admin created together.");
-      }
-
-      resetForm();
-      setConfirmDeleteVenueId(null);
-      load();
-    } catch (err) {
-      setError(getApiErrorMessage(err, isEditing ? "Failed to update venue" : "Failed to create venue"));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const toggleUserStatus = async (userId, isActive) => {
-    try {
-      await api.patch(`/admin/users/${userId}/status`, { isActive: !isActive });
-      setSuccess(`User ${isActive ? "deactivated" : "activated"} successfully.`);
-      load();
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to update user status"));
-    }
-  };
-
-  const handleDeleteVenue = async (venueId) => {
-    try {
-      await api.delete(`/admin/venues/${venueId}`);
-      setSuccess("Venue deleted and its owner account was deactivated.");
-      setConfirmDeleteVenueId(null);
-      if (editingVenueId === venueId) {
-        resetForm();
-      }
-      load();
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to delete venue"));
-    }
-  };
-
-  if (loading) return <p>Loading admin panel...</p>;
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-5">
-        {stats &&
-          [
-            { label: "Users", value: stats.users },
-            { label: "Players", value: stats.players },
-            { label: "Venue Admins", value: stats.venueAdmins },
-            { label: "Venues", value: stats.venues },
-            { label: "Bookings", value: stats.bookings }
-          ].map((card) => (
-            <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-5">
-              <p className="text-sm text-slate-500">{card.label}</p>
-              <p className="mt-2 text-2xl font-semibold">{card.value}</p>
-            </div>
-          ))}
-      </section>
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-6">
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold">
-              {isEditing ? "Edit Venue + Owner" : "Create Venue + Owner"}
-            </h1>
-            <div className="flex gap-2">
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium"
-                >
-                  Cancel edit
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-              >
-                {saving ? (isEditing ? "Saving..." : "Creating...") : isEditing ? "Save" : "Create"}
-              </button>
-            </div>
-          </div>
-
-          <Notice tone="error" className="mt-4">{error}</Notice>
-          <Notice tone="success" className="mt-4">{success}</Notice>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <input
-              type="text"
-              name="ownerName"
-              value={form.ownerName}
-              onChange={handleChange}
-              placeholder="Venue owner name"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="email"
-              name="ownerEmail"
-              value={form.ownerEmail}
-              onChange={handleChange}
-              placeholder="Venue owner email"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="password"
-              name="ownerPassword"
-              value={form.ownerPassword}
-              onChange={handleChange}
-              placeholder={isEditing ? "Leave blank to keep current password" : "Temporary password"}
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="text"
-              name="venueName"
-              value={form.venueName}
-              onChange={handleChange}
-              placeholder="Venue name"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="text"
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Address"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="text"
-              name="city"
-              value={form.city}
-              onChange={handleChange}
-              placeholder="City"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="Venue phone"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="url"
-              name="mapsUrl"
-              value={form.mapsUrl}
-              onChange={handleChange}
-              placeholder="Google Maps URL"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <input
-              type="number"
-              min="1"
-              name="hourlyRate"
-              value={form.hourlyRate}
-              onChange={handleChange}
-              placeholder="Base hourly rate"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Venue description"
-              rows="3"
-              className="md:col-span-2 border border-slate-300 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Venue Gallery</h2>
-              <button
-                type="button"
-                onClick={addGalleryImage}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-              >
-                Add photo
-              </button>
-            </div>
-            <div className="mt-4 space-y-3">
-              {form.galleryImages.map((image, index) => (
-                <div
-                  key={image.id || `gallery-${index}`}
-                  className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-[1fr_1fr_auto]"
-                >
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={image.imageUrl}
-                      onChange={(e) => updateGalleryImage(index, "imageUrl", e.target.value)}
-                      placeholder="https://image-url"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        handleGalleryImageUpload(index, e.target.files?.[0]);
-                        e.target.value = "";
-                      }}
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
-                    />
-                    {image.imageUrl && (
-                      <img
-                        src={resolveAssetUrl(image.imageUrl)}
-                        alt={image.caption || `Venue image ${index + 1}`}
-                        className="h-20 w-full rounded-lg object-cover"
-                      />
-                    )}
-                  </div>
-                  <input
-                    type="text"
-                    value={image.caption}
-                    onChange={(e) => updateGalleryImage(index, "caption", e.target.value)}
-                    placeholder="Caption"
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeGalleryImage(index)}
-                    disabled={form.galleryImages.length === 1 || uploadingIndex === index}
-                    className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 disabled:opacity-50"
-                  >
-                    {uploadingIndex === index ? "Uploading..." : "Remove"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Courts</h2>
-              <button
-                type="button"
-                onClick={addCourt}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-              >
-                Add court
-              </button>
-            </div>
-            <div className="mt-4 space-y-3">
-              {form.courts.map((court, index) => (
-                <div key={court.id || `court-${index}`} className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
-                  <input
-                    type="text"
-                    value={court.name}
-                    onChange={(e) => updateCourt(index, "name", e.target.value)}
-                    placeholder="Court name"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                  <label className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      checked={court.isActive}
-                      onChange={(e) => updateCourt(index, "isActive", e.target.checked)}
-                    />
-                    Active
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => removeCourt(index)}
-                    disabled={form.courts.length === 1}
-                    className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 disabled:opacity-50"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Pricing Rules</h2>
-              <button
-                type="button"
-                onClick={addRule}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-              >
-                Add rule
-              </button>
-            </div>
-            <div className="mt-4 space-y-4">
-              {form.pricingRules.map((rule, index) => (
-                <div
-                  key={rule.id || `rule-${index}`}
-                  className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto]"
-                >
-                  <select
-                    value={rule.dayOfWeek}
-                    onChange={(e) => updateRule(index, "dayOfWeek", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  >
-                    {DAYS_OF_WEEK.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="time"
-                    value={rule.startTime}
-                    onChange={(e) => updateRule(index, "startTime", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                  <input
-                    type="time"
-                    value={rule.endTime}
-                    onChange={(e) => updateRule(index, "endTime", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                  <input
-                    type="number"
-                    min="1"
-                    value={rule.hourlyRate}
-                    onChange={(e) => updateRule(index, "hourlyRate", e.target.value)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeRule(index)}
-                    disabled={form.pricingRules.length === 1}
-                    className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 disabled:opacity-50"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </form>
-
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6">
-            <h2 className="text-xl font-semibold">Venue Owners</h2>
-            <div className="mt-4 space-y-3 max-h-[320px] overflow-auto pr-1">
-              {users.map((user) => (
-                <div key={user.id} className="rounded-xl border border-slate-200 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">
-                        {user.name} - {user.role}
-                      </p>
-                      <p className="text-sm text-slate-500">{user.email}</p>
-                      {user.managedVenue && (
-                        <p className="mt-1 text-sm text-slate-600">
-                          Venue: {user.managedVenue.name}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => toggleUserStatus(user.id, user.isActive)}
-                      className={`rounded-lg px-3 py-2 text-sm ${
-                        user.isActive
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
-                      {user.isActive ? "Deactivate" : "Activate"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-6">
-            <h2 className="text-xl font-semibold">Venues</h2>
-            <div className="mt-4 space-y-3 max-h-[420px] overflow-auto pr-1">
-              {venues.map((venue) => (
-                <div key={venue.id} className="rounded-xl border border-slate-200 p-4">
-                  <div className="mb-3 overflow-hidden rounded-2xl">
-                    <img
-                      src={
-                        resolveAssetUrl(venue.galleryImages?.[0]?.imageUrl) ||
-                        "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80"
-                      }
-                      alt={venue.name}
-                      className="h-40 w-full object-cover"
-                    />
-                  </div>
-                  <p className="font-medium">{venue.name}</p>
-                  <p className="text-sm text-slate-500">
-                    {venue.city} - {venue.admin?.name}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    {venue.courts?.length || 0} courts - {venue.pricingRules?.length || 0} pricing rules
-                  </p>
-                  {venue.mapsUrl && (
-                    <a
-                      href={venue.mapsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 inline-flex text-sm font-medium text-slate-700 hover:underline"
-                    >
-                      Open map
-                    </a>
-                  )}
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => startEdit(venue)}
-                      className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-                    >
-                      Edit
-                    </button>
-                    {confirmDeleteVenueId === venue.id ? (
-                      <>
-                        <button
-                          onClick={() => handleDeleteVenue(venue.id)}
-                          className="rounded-lg bg-rose-600 px-3 py-2 text-sm text-white"
-                        >
-                          Confirm delete
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteVenueId(null)}
-                          className="rounded-lg bg-slate-100 px-3 py-2 text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmDeleteVenueId(venue.id)}
-                        className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+    <div className="space-y-8 animate-fadeIn">
+      {/* Welcome Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            System Administration Panel
+          </h1>
+          <p className="text-slate-500 mt-1">Monitor users, futsal centers, booking statistics, and revenue collections.</p>
+        </div>
+        <div>
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-slate-900 text-white shadow-sm">
+            Platform Master Admin
+          </span>
         </div>
       </div>
+
+      {error && <Notice tone="error">{error}</Notice>}
+      {success && <Notice tone="success">{success}</Notice>}
+
+      {/* Loading Skeleton */}
+      {loading ? (
+        <div className="space-y-6 animate-pulse">
+          <div className="grid gap-4 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="h-28 bg-white border border-slate-200 rounded-2xl"></div>
+            ))}
+          </div>
+          <div className="h-96 bg-white border border-slate-200 rounded-2xl"></div>
+        </div>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: "Total Users", value: stats.totalUsers, color: "text-slate-900" },
+              { label: "Total Venues", value: stats.totalVenues, color: "text-blue-600" },
+              { label: "Total Bookings", value: stats.totalBookings, color: "text-purple-600" },
+              { label: "Total Revenue", value: formatCurrency(stats.totalRevenue), color: "text-emerald-600" }
+            ].map((stat, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Revenue Bar Chart (recharts) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Monthly Platform Revenue (Last 6 Months)</h2>
+            {chartData.length === 0 ? (
+              <div className="h-72 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-400">
+                No monthly revenue chart data available.
+              </div>
+            ) : (
+              <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      axisLine={false}
+                      stroke="#94a3b8"
+                      fontSize={11}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      stroke="#94a3b8"
+                      fontSize={11}
+                      tickFormatter={(num) => `Rs ${num}`}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)" }}
+                      formatter={(value) => [`Rs ${value}`, "Revenue"]}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="#6366f1"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={45}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+
+          {/* Lists Block */}
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Recent Users Table */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-w-0">
+              <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Platform Users</h2>
+              {usersList.length === 0 ? (
+                <p className="text-slate-500 text-sm py-8 text-center border border-dashed border-slate-200 rounded-xl">No users registered on the platform.</p>
+              ) : (
+                <div className="overflow-x-auto flex-1">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50/50">
+                      <tr>
+                        <th className="py-3 px-4">User</th>
+                        <th className="py-3 px-4">Role</th>
+                        <th className="py-3 px-4">Joined Date</th>
+                        <th className="py-3 px-4 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {usersList.map((usr) => (
+                        <tr key={usr.id} className="hover:bg-slate-50/50">
+                          <td className="py-3 px-4">
+                            <div className="font-semibold text-slate-900">{usr.name}</div>
+                            <div className="text-xs text-slate-500">{usr.email}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 text-3xs font-semibold rounded-full uppercase tracking-wider bg-slate-100 text-slate-800">
+                              {usr.role}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-xs text-slate-500">
+                            {new Date(usr.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric"
+                            })}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={() => handleToggleUserStatus(usr.id)}
+                              disabled={actionLoading || usr.id === user.id}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-colors border ${
+                                usr.isActive
+                                  ? "bg-emerald-550 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                                  : "bg-rose-550 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100"
+                              } disabled:opacity-50`}
+                            >
+                              {usr.isActive ? "Active" : "Banned"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Recent Venues Table */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-w-0">
+              <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Registered Futsal Venues</h2>
+              {venuesList.length === 0 ? (
+                <p className="text-slate-500 text-sm py-8 text-center border border-dashed border-slate-200 rounded-xl">No venues registered on the platform.</p>
+              ) : (
+                <div className="overflow-x-auto flex-1">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50/50">
+                      <tr>
+                        <th className="py-3 px-4">Venue</th>
+                        <th className="py-3 px-4">Location</th>
+                        <th className="py-3 px-4">Admin</th>
+                        <th className="py-3 px-4">Courts</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {venuesList.map((vn) => (
+                        <tr key={vn.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">{vn.name}</td>
+                          <td className="py-3.5 px-4 text-xs text-slate-500">{vn.city}</td>
+                          <td className="py-3.5 px-4">{vn.admin?.name || "No Admin"}</td>
+                          <td className="py-3.5 px-4 text-center font-bold text-slate-700 bg-slate-50/50 rounded-lg">
+                            {vn.courts?.length || 0}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

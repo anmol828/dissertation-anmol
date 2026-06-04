@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import api from "../lib/api.js";
 import Notice from "../components/Notice.jsx";
 import {
@@ -24,7 +24,9 @@ const resolveAssetUrl = (value) => {
 };
 
 const Search = () => {
-  const [activeTab, setActiveTab] = useState("venues");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "players" ? "players" : "venues";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [venues, setVenues] = useState([]);
   const [players, setPlayers] = useState([]);
   const [venueFilters, setVenueFilters] = useState({
@@ -94,6 +96,11 @@ const Search = () => {
     setPlayerFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
   return (
     <div className="space-y-6">
       <section className="rounded-[28px] border border-white/70 bg-white/85 p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
@@ -111,7 +118,7 @@ const Search = () => {
           <button
             key={tab.value}
             type="button"
-            onClick={() => setActiveTab(tab.value)}
+            onClick={() => handleTabChange(tab.value)}
             className={`rounded-xl px-4 py-2 text-sm font-medium ${
               activeTab === tab.value ? "bg-slate-950 text-white" : "text-slate-600"
             }`}

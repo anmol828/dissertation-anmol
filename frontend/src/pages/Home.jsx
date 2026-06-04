@@ -150,7 +150,7 @@ const Home = () => {
             </p>
           </div>
           <Link to="/venues" className="text-sm font-medium text-slate-700 hover:underline">
-            View all venues
+            Explore more
           </Link>
         </div>
 
@@ -197,12 +197,17 @@ const Home = () => {
         )}
       </section>
 
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Home Teams</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Venue-backed squads available for community matches and player discovery.
-          </p>
+      {/* <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Home Teams</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Venue-backed squads available for community matches and player discovery.
+            </p>
+          </div>
+          <Link to="/venues" className="text-sm font-medium text-slate-700 hover:underline">
+            Explore more
+          </Link>
         </div>
 
         {loading ? (
@@ -250,14 +255,22 @@ const Home = () => {
             )}
           </div>
         )}
-      </section>
+      </section> */}
 
       <section className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Star Players</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            High-completion player profiles that help teams and venue communities connect faster.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Star Players</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              High-completion player profiles that help teams and venue communities connect faster.
+            </p>
+          </div>
+          <Link
+            to="/search?tab=players"
+            className="text-sm font-medium text-slate-700 hover:underline"
+          >
+            Explore more
+          </Link>
         </div>
 
         {loading ? (

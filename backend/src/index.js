@@ -29,8 +29,20 @@ app.use("/api", apiRouter);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(env.port, () => {
+const server = app.listen(env.port, () => {
   // eslint-disable-next-line no-console
   console.log(`Backend listening on port ${env.port}`);
+});
+
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    // eslint-disable-next-line no-console
+    console.error(
+      `Port ${env.port} is already in use. Stop the existing backend process or set a different PORT in .env.`
+    );
+    process.exit(1);
+  }
+
+  throw error;
 });
 
