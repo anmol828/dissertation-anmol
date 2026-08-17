@@ -1,9 +1,9 @@
 import React from "react";
 
 const styles = {
-  error: "border-red-200 bg-red-50 text-red-700",
-  success: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  info: "border-slate-200 bg-slate-50 text-slate-700"
+  error: "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-300",
+  success: "border-pitch/30 bg-pitch-soft text-pitch-strong",
+  info: "border-line bg-surface-2 text-muted"
 };
 
 const Notice = ({ tone = "info", children, className = "" }) => {
@@ -12,7 +12,7 @@ const Notice = ({ tone = "info", children, className = "" }) => {
   }
 
   return (
-    <div className={`rounded-lg border px-3 py-2 text-sm ${styles[tone]} ${className}`.trim()}>
+    <div className={`rounded-xl border px-3.5 py-2.5 text-sm font-medium ${styles[tone]} ${className}`.trim()}>
       {children}
     </div>
   );

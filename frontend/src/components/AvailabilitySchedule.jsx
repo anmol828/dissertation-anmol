@@ -2,11 +2,12 @@ import React from "react";
 import { formatHourLabel, getSlotState, HOUR_SLOTS } from "../lib/schedule.js";
 
 const slotStyles = {
-  idle: "bg-slate-50 text-slate-400 border-slate-200",
-  closed: "bg-slate-100 text-slate-400 border-slate-200",
-  past: "bg-slate-100 text-slate-400 border-slate-200",
-  booked: "bg-rose-50 text-rose-700 border-rose-200",
-  available: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+  idle: "bg-surface-2 text-muted border-line",
+  closed: "bg-surface-2 text-muted border-line",
+  past: "bg-surface-2 text-muted border-line",
+  booked: "bg-red-500/10 text-red-600 dark:text-red-300 border-red-500/25",
+  available:
+    "bg-pitch-soft text-pitch-strong border-pitch/30 hover:bg-pitch hover:text-pitch-fg hover:border-pitch"
 };
 
 const AvailabilitySchedule = ({
@@ -22,11 +23,11 @@ const AvailabilitySchedule = ({
   interactive = false
 }) => {
   return (
-    <section className="rounded-2xl bg-white border border-slate-200 p-6">
+    <section className="fh-card p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold">{title}</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="font-display text-xl font-bold text-foreground">{title}</h2>
+          <p className="mt-1 max-w-xl text-sm text-muted">
             Green slots are open, red slots are already booked, and muted slots are outside
             operating hours or already in the past.
           </p>
@@ -36,21 +37,21 @@ const AvailabilitySchedule = ({
           value={dateValue}
           onChange={(event) => onDateChange(event.target.value)}
           min={new Date().toISOString().split("T")[0]}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+          className="fh-input md:w-auto"
         />
       </div>
 
       <div className="mt-5 space-y-5">
         {courts.map((court) => (
-          <div key={court.id} className="rounded-xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-50 px-4 py-3 flex items-center justify-between gap-3">
+          <div key={court.id} className="overflow-hidden rounded-2xl border border-line">
+            <div className="flex items-center justify-between gap-3 border-b border-line bg-surface-2 px-4 py-3">
               <div>
-                <h3 className="font-semibold text-slate-900">{court.name}</h3>
-                <p className="text-sm text-slate-500">
+                <h3 className="font-display font-bold text-foreground">{court.name}</h3>
+                <p className="text-sm text-muted">
                   {court.isActive ? "Open for booking" : "Marked inactive"}
                 </p>
               </div>
-              <div className="text-xs text-slate-500">Court ID: {court.id}</div>
+              <div className="fh-chip">Court ID: {court.id}</div>
             </div>
 
             <div className="p-4 grid gap-2 grid-cols-2 md:grid-cols-4 xl:grid-cols-6">
@@ -66,10 +67,10 @@ const AvailabilitySchedule = ({
                   String(selectedCourtId) === String(court.id) && selectedTime === timeValue;
 
                 const className = [
-                  "rounded-lg border px-3 py-3 text-left text-sm transition min-h-[78px]",
+                  "rounded-xl border px-3 py-3 text-left text-sm font-medium transition min-h-[78px]",
                   slotStyles[slot.state],
                   interactive && slot.state === "available" ? "cursor-pointer" : "cursor-default",
-                  isSelected ? "ring-2 ring-slate-900" : ""
+                  isSelected ? "ring-2 ring-pitch ring-offset-2 ring-offset-surface" : ""
                 ]
                   .filter(Boolean)
                   .join(" ");
@@ -111,7 +112,7 @@ const AvailabilitySchedule = ({
         ))}
 
         {courts.length === 0 && (
-          <p className="text-sm text-slate-500">No courts available for schedule rendering.</p>
+          <p className="text-sm text-muted">No courts available for schedule rendering.</p>
         )}
       </div>
     </section>

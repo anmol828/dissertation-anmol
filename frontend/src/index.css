@@ -2,15 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-slate-100 text-slate-900 antialiased;
+@layer base {
+  :root {
+    /* Light theme - pitch green + charcoal, bold & sporty */
+    --c-bg: 243 246 244;
+    --c-surface: 255 255 255;
+    --c-surface-2: 237 242 239;
+    --c-border: 210 220 214;
+    --c-fg: 13 22 18;
+    --c-muted: 90 104 98;
+    --c-charcoal: 15 22 18;
+    --c-pitch: 22 163 74;
+    --c-pitch-strong: 21 128 61;
+    --c-pitch-soft: 219 244 228;
+    --c-pitch-fg: 255 255 255;
+    --c-accent: 132 204 22;
+    --c-accent-fg: 20 33 8;
+    --c-shadow: 15 32 24;
+  }
+
+  .dark {
+    /* Dark "stadium" theme */
+    --c-bg: 7 11 9;
+    --c-surface: 17 24 20;
+    --c-surface-2: 25 34 29;
+    --c-border: 39 50 44;
+    --c-fg: 231 240 234;
+    --c-muted: 149 165 156;
+    --c-charcoal: 14 20 17;
+    --c-pitch: 34 197 94;
+    --c-pitch-strong: 74 222 128;
+    --c-pitch-soft: 18 40 27;
+    --c-pitch-fg: 6 12 8;
+    --c-accent: 163 230 53;
+    --c-accent-fg: 16 26 6;
+    --c-shadow: 0 0 0;
+  }
+
+  html {
+    @apply bg-bg;
+  }
+
+  body {
+    @apply bg-bg text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgb(var(--c-pitch) / 0.22);
+  }
+
+  * {
+    border-color: rgb(var(--c-border));
+  }
 }
 
-#root {
-  min-height: 100vh;
-}
+@layer components {
+  /* ----- Cards ----- */
+  .fh-card {
+    @apply rounded-3xl border border-line bg-surface shadow-soft;
+  }
 
-::selection {
-  background: rgba(15, 23, 42, 0.12);
-}
+  .fh-card-hover {
+    @apply rounded-3xl border border-line bg-surface shadow-soft transition duration-300
+      hover:-translate-y-1 hover:border-pitch/40 hover:shadow-lift;
+  }
 
+  /* Elevated / hero surface */
+  .fh-panel {
+    @apply rounded-4xl border border-line bg-surface shadow-lift;
+  }
+
+  /* Always-dark charcoal panel (hero side, auth aside) */
+  .fh-panel-dark {
+    @apply rounded-4xl border border-white/10 bg-charcoal text-white shadow-lift;
+  }
+
+  /* ----- Form fields ----- */
+  .fh-label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-muted;
+  }
+
+  .fh-input,
+  .fh-textarea,
+  .fh-select {
+    @apply w-full rounded-2xl border border-line bg-surface-2 px-4 py-3 text-sm text-foreground
+      placeholder:text-muted/70 transition
+      focus:border-pitch focus:bg-surface focus:outline-none focus:ring-4 focus:ring-pitch/15;
+  }
+
+  .fh-textarea {
+    @apply min-h-[110px] resize-y;
+  }
+
+  /* ----- Buttons ----- */
+  .fh-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold
+      transition duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pitch/25
+      disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .fh-btn-primary {
+    @apply fh-btn bg-pitch text-pitch-fg shadow-soft hover:-translate-y-0.5 hover:bg-pitch-strong hover:shadow-glow;
+  }
+
+  .fh-btn-secondary {
+    @apply fh-btn border border-line bg-surface text-foreground hover:-translate-y-0.5 hover:border-pitch/40 hover:bg-surface-2;
+  }
+
+  .fh-btn-ghost {
+    @apply fh-btn text-muted hover:bg-surface-2 hover:text-foreground;
+  }
+
+  .fh-btn-danger {
+    @apply fh-btn bg-red-600 text-white hover:-translate-y-0.5 hover:bg-red-700;
+  }
+
+  /* ----- Badges / chips ----- */
+  .fh-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-pitch/25 bg-pitch-soft px-3 py-1
+      text-xs font-semibold text-pitch-strong;
+  }
+
+  .fh-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1
+      text-xs font-medium text-muted;
+  }
+
+  /* Kicker / eyebrow label */
+  .fh-kicker {
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-pitch;
+  }
+}

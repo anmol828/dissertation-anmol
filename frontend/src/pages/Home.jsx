@@ -4,7 +4,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import api from "../lib/api.js";
 import { Reveal, RevealGroup, RevealItem } from "../components/motion/Reveal.jsx";
 import {
-  glassPanel,
   glassPanelStrong,
   glassCardHover,
   glassOnDark,
@@ -30,13 +29,15 @@ const resolveAssetUrl = (value) => {
 const SectionHeader = ({ title, subtitle, to, action = "Explore more" }) => (
   <Reveal className="flex items-end justify-between gap-4">
     <div>
-      <h2 className="text-2xl font-semibold tracking-tight text-slate-950">{title}</h2>
-      {subtitle && <p className="mt-1 max-w-2xl text-sm text-slate-500">{subtitle}</p>}
+      <h2 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+        {title}
+      </h2>
+      {subtitle && <p className="mt-1.5 max-w-2xl text-sm text-muted">{subtitle}</p>}
     </div>
     {to && (
       <Link
         to={to}
-        className="group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-slate-700 transition hover:text-emerald-700"
+        className="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-pitch transition hover:text-pitch-strong"
       >
         {action}
         <span className="transition-transform duration-300 group-hover:translate-x-0.5">
@@ -48,8 +49,8 @@ const SectionHeader = ({ title, subtitle, to, action = "Explore more" }) => (
 );
 
 const SkeletonRow = ({ label }) => (
-  <div className="flex items-center gap-2 text-sm text-slate-500">
-    <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+  <div className="flex items-center gap-2 text-sm text-muted">
+    <span className="h-2 w-2 animate-pulse rounded-full bg-pitch" />
     {label}
   </div>
 );
@@ -69,16 +70,16 @@ const Hero = ({ featuredVenue }) => {
 
   return (
     <section
-      className={`relative overflow-hidden rounded-[28px] ${glassPanelStrong}`}
+      className={`relative overflow-hidden rounded-4xl ${glassPanelStrong}`}
     >
-      {/* Soft ambient glow behind the glass */}
+      {/* Soft ambient glow behind the surface */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl"
+        className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-pitch/25 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 right-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"
+        className="pointer-events-none absolute -bottom-32 right-10 h-72 w-72 rounded-full bg-accent/20 blur-3xl"
       />
 
       <div className="relative grid lg:grid-cols-[1.05fr_0.95fr]">
@@ -88,29 +89,23 @@ const Hero = ({ featuredVenue }) => {
           animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 backdrop-blur">
+          <span className="fh-badge px-4 py-2 text-[11px] uppercase tracking-[0.18em]">
             Multi-role futsal operations
           </span>
-          <h1 className="mt-6 max-w-3xl text-balance text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
+          <h1 className="mt-6 max-w-3xl text-balance font-display text-4xl font-extrabold uppercase leading-[1.02] tracking-tight text-foreground md:text-5xl xl:text-6xl">
             One place to run bookings, showcase players, and keep venue schedules full.
           </h1>
-          <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-slate-600">
+          <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted">
             FutsalHub is designed around the real day-to-day flow of a sports facility:
             players need visibility, owners need schedule control, and admins need a calm
             operational overview.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/venues"
-              className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg"
-            >
+            <Link to="/venues" className="fh-btn-primary">
               Explore venues
             </Link>
-            <Link
-              to="/register"
-              className="rounded-2xl border border-slate-200 bg-white/70 px-5 py-3 text-sm font-medium text-slate-700 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:bg-white"
-            >
+            <Link to="/register" className="fh-btn-secondary">
               Create account
             </Link>
           </div>
@@ -119,19 +114,21 @@ const Hero = ({ featuredVenue }) => {
             {stats.map((item) => (
               <RevealItem
                 key={item.label}
-                className="rounded-2xl border border-white/60 bg-white/60 p-4 backdrop-blur-md"
+                className="rounded-2xl border border-line bg-surface-2 p-4"
               >
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pitch">
                   {item.label}
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-slate-950">{item.value}</p>
-                <p className="mt-1 text-sm text-slate-500">{item.note}</p>
+                <p className="mt-2 font-display text-2xl font-extrabold text-foreground">
+                  {item.value}
+                </p>
+                <p className="mt-1 text-sm text-muted">{item.note}</p>
               </RevealItem>
             ))}
           </RevealGroup>
         </motion.div>
 
-        <div className="relative min-h-[360px] overflow-hidden bg-slate-950">
+        <div className="relative min-h-[360px] overflow-hidden bg-charcoal">
           <motion.img
             src={
               resolveAssetUrl(featuredVenue?.galleryImages?.[0]?.imageUrl) ||
@@ -143,19 +140,19 @@ const Hero = ({ featuredVenue }) => {
             animate={reduceMotion ? {} : { scale: 1 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           />
-          <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-950/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-charcoal via-charcoal/50 to-transparent" />
           <div className="relative z-10 flex h-full items-end p-8 md:p-10">
             <Reveal
               className={`max-w-md rounded-3xl p-5 text-white ${glassOnDark}`}
               delay={0.15}
             >
-              <p className="text-xs uppercase tracking-[0.16em] text-emerald-300">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-pitch-strong">
                 Featured venue snapshot
               </p>
-              <h2 className="mt-3 text-2xl font-semibold">
+              <h2 className="mt-3 font-display text-2xl font-bold">
                 {featuredVenue?.name || "Prime-time courts ready to book"}
               </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-200">
+              <p className="mt-3 text-sm leading-6 text-white/80">
                 {featuredVenue?.description ||
                   "Use the live schedule grid to book faster, review slot pressure, and manage evening demand without spreadsheet work."}
               </p>
@@ -192,10 +189,15 @@ const ValueProps = () => {
       {items.map((item) => (
         <RevealItem
           key={item.title}
-          className={`rounded-[24px] p-6 ${glassCardHover}`}
+          className={`p-6 ${glassCardHover}`}
         >
-          <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{item.text}</p>
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pitch-soft text-pitch-strong">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <h2 className="mt-4 font-display text-lg font-bold text-foreground">{item.title}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">{item.text}</p>
         </RevealItem>
       ))}
     </RevealGroup>
@@ -210,7 +212,7 @@ const VenueCard = ({ venue }) => (
   <RevealItem>
     <Link
       to={`/venues/${venue.id}`}
-      className={`group block h-full overflow-hidden rounded-[24px] ${glassCardHover}`}
+      className={`group block h-full overflow-hidden ${glassCardHover}`}
     >
       <div className="aspect-[16/10] overflow-hidden">
         <img
@@ -222,21 +224,21 @@ const VenueCard = ({ venue }) => (
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-slate-950">{venue.name}</h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <h3 className="font-display text-lg font-bold text-foreground">{venue.name}</h3>
+            <p className="mt-1 text-sm text-muted">
               {venue.address}, {venue.city}
             </p>
           </div>
-          <span className="rounded-xl bg-slate-100/80 px-3 py-2 text-xs font-medium text-slate-700 backdrop-blur">
+          <span className="fh-chip shrink-0">
             {venue.courts?.length || 0} courts
           </span>
         </div>
-        <p className="mt-4 text-sm leading-6 text-slate-600">
+        <p className="mt-4 text-sm leading-6 text-muted">
           {venue.description || "Indoor futsal venue with role-based booking support."}
         </p>
-        <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-          <span className="text-slate-500">Base rate</span>
-          <span className="font-semibold text-slate-950">Rs. {venue.hourlyRate}</span>
+        <div className="mt-5 flex items-center justify-between border-t border-line pt-4 text-sm">
+          <span className="text-muted">Base rate</span>
+          <span className="font-display text-lg font-extrabold text-pitch">Rs. {venue.hourlyRate}</span>
         </div>
       </div>
     </Link>
@@ -267,28 +269,28 @@ const FeaturedVenues = ({ loading, venues }) => (
 /* -------------------------------------------------------------------------- */
 
 const TeamCard = ({ team }) => (
-  <RevealItem className={`rounded-[24px] p-5 ${glassCardHover}`}>
+  <RevealItem className={`p-5 ${glassCardHover}`}>
     <div className="flex items-center gap-4">
       <img
         src={resolveAssetUrl(team.imageUrl) || fallbackVenueImage}
         alt={team.name}
-        className="h-16 w-16 rounded-2xl object-cover"
+        className="h-16 w-16 rounded-2xl object-cover ring-2 ring-pitch/20"
       />
       <div className="min-w-0">
-        <h3 className="truncate text-lg font-semibold text-slate-950">{team.name}</h3>
-        <p className="truncate text-sm text-slate-500">
+        <h3 className="truncate font-display text-lg font-bold text-foreground">{team.name}</h3>
+        <p className="truncate text-sm text-muted">
           {team.venue?.name || "Independent venue"}
         </p>
       </div>
     </div>
     <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-      <div className="rounded-2xl border border-white/50 bg-slate-50/70 px-3 py-2 backdrop-blur">
-        <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Players</p>
-        <p className="mt-1 font-semibold text-slate-950">{team.players?.length || 0}</p>
+      <div className="rounded-2xl border border-line bg-surface-2 px-3 py-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Players</p>
+        <p className="mt-1 font-display font-bold text-foreground">{team.players?.length || 0}</p>
       </div>
-      <div className="rounded-2xl border border-white/50 bg-slate-50/70 px-3 py-2 backdrop-blur">
-        <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Skill</p>
-        <p className="mt-1 font-semibold text-slate-950">{team.skillLevel || "Open"}</p>
+      <div className="rounded-2xl border border-line bg-surface-2 px-3 py-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Skill</p>
+        <p className="mt-1 font-display font-bold text-foreground">{team.skillLevel || "Open"}</p>
       </div>
     </div>
   </RevealItem>
@@ -309,7 +311,7 @@ const HomeTeams = ({ loading, teams }) => (
           <TeamCard key={team.id} team={team} />
         ))}
         {teams.length === 0 && (
-          <p className="text-sm text-slate-600">No home teams available yet.</p>
+          <p className="text-sm text-muted">No home teams available yet.</p>
         )}
       </RevealGroup>
     )}
@@ -324,32 +326,32 @@ const PlayerCard = ({ player }) => (
   <RevealItem>
     <Link
       to={`/players/${player.id}`}
-      className={`group block h-full rounded-[24px] p-5 ${glassCardHover}`}
+      className={`group block h-full p-5 ${glassCardHover}`}
     >
       <div className="flex items-center gap-4">
         <img
           src={resolveAssetUrl(player.profileImageUrl) || fallbackPlayerImage}
           alt={player.user?.name || "Player"}
-          className="h-16 w-16 rounded-2xl object-cover"
+          className="h-16 w-16 rounded-2xl object-cover ring-2 ring-pitch/20"
         />
         <div>
-          <h3 className="text-lg font-semibold text-slate-950">{player.user?.name}</h3>
-          <p className="text-sm text-slate-500">
+          <h3 className="font-display text-lg font-bold text-foreground">{player.user?.name}</h3>
+          <p className="text-sm text-muted">
             {player.position.replaceAll("_", " ")} - {player.skill}
           </p>
         </div>
       </div>
       <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+        <span className="fh-badge">
           {player.status.replaceAll("_", " ")}
         </span>
         {player.city && (
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+          <span className="fh-chip">
             {player.city}
           </span>
         )}
       </div>
-      <p className="mt-4 text-sm leading-6 text-slate-600">
+      <p className="mt-4 text-sm leading-6 text-muted">
         {player.bio || "Profile completed and ready for match-day discovery."}
       </p>
     </Link>

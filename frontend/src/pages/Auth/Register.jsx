@@ -71,81 +71,81 @@ const Register = () => {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <section className="rounded-[28px] border border-white/70 bg-white/90 p-8 shadow-[0_16px_48px_rgba(15,23,42,0.08)] md:p-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+      <section className="fh-panel p-8 md:p-10">
+        <h1 className="font-display text-3xl font-extrabold uppercase tracking-tight text-foreground">
           Create your FutsalHub account
         </h1>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
+        <p className="mt-3 text-sm leading-7 text-muted">
           Register as a player or a booking user. The app will only expose the navigation and
           workflows that belong to your role.
         </p>
         <Notice tone="error" className="mt-5">{error}</Notice>
         <form onSubmit={handleSubmit} className="mt-5 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+            <label className="fh-label">Full Name</label>
             <input
               type="text"
               name="name"
               value={form.name}
               onChange={handleChange}
               required
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="fh-input"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <label className="fh-label">Email</label>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="fh-input"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <label className="fh-label">Password</label>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
               required
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="fh-input"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+            <label className="fh-label">Role</label>
             <select
               name="role"
               value={form.role}
               onChange={handleChange}
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="fh-select"
             >
               <option value="USER">Booking User</option>
               <option value="PLAYER">Player</option>
               {allowAdminRegistration && <option value="ADMIN">Platform Admin</option>}
             </select>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-2xl bg-slate-950 py-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
-          >
+          <button type="submit" disabled={loading} className="fh-btn-primary w-full">
             {loading ? "Creating account..." : "Register"}
           </button>
         </form>
-        <p className="mt-5 text-sm text-slate-600">
+        <p className="mt-5 text-sm text-muted">
           Already have an account?{" "}
-          <Link to="/login" className="font-medium text-slate-950 hover:underline">
+          <Link to="/login" className="font-semibold text-pitch hover:text-pitch-strong">
             Login
           </Link>
         </p>
       </section>
 
-      <section className="rounded-[28px] border border-white/70 bg-slate-950 p-8 text-white shadow-[0_20px_60px_rgba(15,23,42,0.12)] md:p-10">
-        <p className="text-xs uppercase tracking-[0.18em] text-emerald-300">Role-based access</p>
-        <h2 className="mt-4 text-4xl font-semibold tracking-tight">
+      <section className="fh-panel-dark relative overflow-hidden p-8 md:p-10">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-pitch/30 blur-3xl"
+        />
+        <p className="fh-kicker text-pitch-strong">Role-based access</p>
+        <h2 className="mt-4 font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight">
           The app only shows what your role should actually use.
         </h2>
         <div className="mt-8 grid gap-4">
@@ -164,8 +164,8 @@ const Register = () => {
             }
           ].map((item) => (
             <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="font-medium text-white">{item.title}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{item.text}</p>
+              <p className="font-semibold text-white">{item.title}</p>
+              <p className="mt-2 text-sm leading-6 text-white/70">{item.text}</p>
             </div>
           ))}
         </div>
