@@ -37,28 +37,28 @@ const VenueList = () => {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-white/70 bg-white/85 p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-4xl border border-line bg-surface p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-emerald-700">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-pitch-strong">
               Venue discovery
             </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
               Browse futsal venues with schedules, pricing, and booking-ready courts.
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted">
               Every venue is presented as an operational card: image-led, location-aware,
               rate-visible, and ready to drill into the calendar view.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Visible venues</p>
-              <p className="mt-1 text-2xl font-semibold text-slate-950">{venues.length}</p>
+            <div className="rounded-2xl bg-surface-2 px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.14em] text-muted">Visible venues</p>
+              <p className="mt-1 text-2xl font-semibold text-foreground">{venues.length}</p>
             </div>
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Booking mode</p>
-              <p className="mt-1 text-2xl font-semibold text-slate-950">Live</p>
+            <div className="rounded-2xl bg-surface-2 px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.14em] text-muted">Booking mode</p>
+              <p className="mt-1 text-2xl font-semibold text-foreground">Live</p>
             </div>
           </div>
         </div>
@@ -71,7 +71,7 @@ const VenueList = () => {
           <Link
             key={venue.id}
             to={`/venues/${venue.id}`}
-            className="overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_12px_40px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_54px_rgba(15,23,42,0.1)]"
+            className="overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_12px_40px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_54px_rgba(15,23,42,0.1)]"
           >
             <div className="aspect-[16/10] overflow-hidden">
               <img
@@ -83,28 +83,28 @@ const VenueList = () => {
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-950">{venue.name}</h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <h2 className="text-xl font-semibold text-foreground">{venue.name}</h2>
+                  <p className="mt-1 text-sm text-muted">
                     {venue.address}, {venue.city}
                   </p>
                 </div>
-                <div className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-medium text-slate-700">
+                <div className="rounded-xl bg-surface-2 px-3 py-2 text-xs font-medium text-foreground">
                   {venue.courts?.length || 0} courts
                 </div>
               </div>
 
               {venue.description && (
-                <p className="mt-4 text-sm leading-6 text-slate-600">{venue.description}</p>
+                <p className="mt-4 text-sm leading-6 text-muted">{venue.description}</p>
               )}
 
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Base rate</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">Rs. {venue.hourlyRate}</p>
+                <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted">Base rate</p>
+                  <p className="mt-1 text-lg font-semibold text-foreground">Rs. {venue.hourlyRate}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Gallery</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">
+                <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted">Gallery</p>
+                  <p className="mt-1 text-lg font-semibold text-foreground">
                     {venue.galleryImages?.length || 0} photos
                   </p>
                 </div>
@@ -131,7 +131,7 @@ const VenueList = () => {
       </section>
 
       {venues.length === 0 && !error && (
-        <p className="text-sm text-slate-600">No venues available yet.</p>
+        <p className="text-sm text-muted">No venues available yet.</p>
       )}
     </div>
   );

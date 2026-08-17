@@ -311,26 +311,26 @@ const VenueAdminDashboard = () => {
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-surface rounded-2xl p-6 border border-line shadow-sm">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               {venue?.name || "Venue Admin Dashboard"}
             </h1>
             <button
               onClick={() => setActiveTab(activeTab === "edit-venue" ? "dashboard" : "edit-venue")}
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200"
+              className="text-xs font-semibold text-muted hover:text-foreground bg-surface-2 hover:bg-surface-2 px-2.5 py-1.5 rounded-lg border border-line"
             >
               {activeTab === "edit-venue" ? "Back to Dash" : "Edit Venue"}
             </button>
           </div>
-          <p className="text-slate-500 mt-1">{venue?.address}, {venue?.city}</p>
+          <p className="text-muted mt-1">{venue?.address}, {venue?.city}</p>
         </div>
         <div className="flex items-center gap-2">
           {activeTab !== "dashboard" && (
             <button
               onClick={() => { setActiveTab("dashboard"); setError(""); setSuccess(""); }}
-              className="px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-line bg-surface text-foreground rounded-xl text-sm font-semibold hover:bg-surface-2"
             >
               Dashboard Home
             </button>
@@ -346,98 +346,98 @@ const VenueAdminDashboard = () => {
         <div className="space-y-6">
           <div className="grid gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="h-28 bg-white border border-slate-200 rounded-2xl animate-pulse"></div>
+              <div key={idx} className="h-28 bg-surface border border-line rounded-2xl animate-pulse"></div>
             ))}
           </div>
-          <div className="h-96 bg-white border border-slate-200 rounded-2xl animate-pulse"></div>
+          <div className="h-96 bg-surface border border-line rounded-2xl animate-pulse"></div>
         </div>
       ) : (
         <>
           {/* Sub-View: Edit Venue Profile */}
           {activeTab === "edit-venue" && (
-            <form onSubmit={handleVenueUpdate} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-              <h2 className="text-xl font-bold text-slate-900">Edit Venue Details</h2>
+            <form onSubmit={handleVenueUpdate} className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-6">
+              <h2 className="text-xl font-bold text-foreground">Edit Venue Details</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Venue Name</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Venue Name</label>
                   <input
                     type="text"
                     value={venueForm.name}
                     onChange={(e) => setVenueForm({ ...venueForm, name: e.target.value })}
                     required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Contact Phone</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Contact Phone</label>
                   <input
                     type="text"
                     value={venueForm.phone}
                     onChange={(e) => setVenueForm({ ...venueForm, phone: e.target.value })}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Address</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Address</label>
                   <input
                     type="text"
                     value={venueForm.address}
                     onChange={(e) => setVenueForm({ ...venueForm, address: e.target.value })}
                     required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">City</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">City</label>
                   <input
                     type="text"
                     value={venueForm.city}
                     onChange={(e) => setVenueForm({ ...venueForm, city: e.target.value })}
                     required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Base Hourly Rate (NPR)</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Base Hourly Rate (NPR)</label>
                   <input
                     type="number"
                     value={venueForm.hourlyRate}
                     onChange={(e) => setVenueForm({ ...venueForm, hourlyRate: Number(e.target.value) })}
                     required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Google Maps URL</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Google Maps URL</label>
                   <input
                     type="url"
                     value={venueForm.mapsUrl}
                     onChange={(e) => setVenueForm({ ...venueForm, mapsUrl: e.target.value })}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Venue Description</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Venue Description</label>
                   <textarea
                     value={venueForm.description}
                     onChange={(e) => setVenueForm({ ...venueForm, description: e.target.value })}
                     rows={4}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                    className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                   ></textarea>
                 </div>
               </div>
-              <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
+              <div className="flex gap-3 justify-end border-t border-line pt-4">
                 <button
                   type="button"
                   onClick={() => setActiveTab("dashboard")}
-                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-line text-foreground rounded-lg text-sm font-semibold hover:bg-surface-2"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                  className="px-4 py-2 bg-charcoal text-white rounded-lg text-sm font-semibold hover:bg-charcoal disabled:opacity-50"
                 >
                   {saving ? "Saving..." : "Save Profile"}
                 </button>
@@ -448,62 +448,62 @@ const VenueAdminDashboard = () => {
           {/* Sub-View: Add Court */}
           {activeTab === "courts" && (
             <div className="space-y-6">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-                <h2 className="text-xl font-bold text-slate-900">Existing Courts</h2>
+              <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-6">
+                <h2 className="text-xl font-bold text-foreground">Existing Courts</h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {venue?.courts?.map((court) => (
-                    <div key={court.id} className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 flex items-center justify-between">
+                    <div key={court.id} className="p-4 border border-line rounded-xl bg-surface-2 flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-slate-900">{court.name}</p>
-                        <p className="text-xs text-slate-500">{court.isActive ? "Active" : "Inactive"}</p>
+                        <p className="font-semibold text-foreground">{court.name}</p>
+                        <p className="text-xs text-muted">{court.isActive ? "Active" : "Inactive"}</p>
                       </div>
-                      <div className={`h-2.5 w-2.5 rounded-full ${court.isActive ? "bg-emerald-500" : "bg-slate-300"}`}></div>
+                      <div className={`h-2.5 w-2.5 rounded-full ${court.isActive ? "bg-pitch" : "bg-slate-300"}`}></div>
                     </div>
                   ))}
                   {venue?.courts?.length === 0 && (
-                    <p className="text-sm text-slate-500 col-span-full py-4 text-center border border-dashed border-slate-200 rounded-xl">No courts added yet.</p>
+                    <p className="text-sm text-muted col-span-full py-4 text-center border border-dashed border-line rounded-xl">No courts added yet.</p>
                   )}
                 </div>
               </div>
 
-              <form onSubmit={handleAddCourtSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-                <h2 className="text-xl font-bold text-slate-900">Add Futsal Court</h2>
+              <form onSubmit={handleAddCourtSubmit} className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-6">
+                <h2 className="text-xl font-bold text-foreground">Add Futsal Court</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Court Name</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Court Name</label>
                     <input
                       type="text"
                       value={courtForm.name}
                       onChange={(e) => setCourtForm({ ...courtForm, name: e.target.value })}
                       placeholder="e.g. Court A (Indoor)"
                       required
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none"
                     />
                   </div>
                   <div className="flex items-end pb-2">
-                    <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
                       <input
                         type="checkbox"
                         checked={courtForm.isActive}
                         onChange={(e) => setCourtForm({ ...courtForm, isActive: e.target.checked })}
-                        className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                        className="rounded border-line text-foreground focus:ring-slate-500"
                       />
                       Mark Court as Active
                     </label>
                   </div>
                 </div>
-                <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
+                <div className="flex gap-3 justify-end border-t border-line pt-4">
                   <button
                     type="button"
                     onClick={() => setActiveTab("dashboard")}
-                    className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
+                    className="px-4 py-2 border border-line text-foreground rounded-lg text-sm font-semibold hover:bg-surface-2"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                    className="px-4 py-2 bg-charcoal text-white rounded-lg text-sm font-semibold hover:bg-charcoal disabled:opacity-50"
                   >
                     {saving ? "Adding..." : "Add Court"}
                   </button>
@@ -514,13 +514,13 @@ const VenueAdminDashboard = () => {
 
           {/* Sub-View: Edit Pricing Rules */}
           {activeTab === "pricing" && (
-            <form onSubmit={handlePricingSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+            <form onSubmit={handlePricingSubmit} className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900">Configure Dynamic Pricing Rules</h2>
+                <h2 className="text-xl font-bold text-foreground">Configure Dynamic Pricing Rules</h2>
                 <button
                   type="button"
                   onClick={addPricingRuleRow}
-                  className="px-3 py-1.5 bg-slate-100 text-slate-900 text-xs font-semibold rounded-lg hover:bg-slate-200"
+                  className="px-3 py-1.5 bg-surface-2 text-foreground text-xs font-semibold rounded-lg hover:bg-surface-2"
                 >
                   + Add Rule Row
                 </button>
@@ -528,16 +528,16 @@ const VenueAdminDashboard = () => {
 
               <div className="space-y-4">
                 {pricingRules.length === 0 ? (
-                  <p className="text-slate-500 text-sm">No rules configured. The base rate will apply to all schedules.</p>
+                  <p className="text-muted text-sm">No rules configured. The base rate will apply to all schedules.</p>
                 ) : (
                   pricingRules.map((rule, idx) => (
-                    <div key={idx} className="grid gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl sm:grid-cols-5 items-center">
+                    <div key={idx} className="grid gap-3 p-4 bg-surface-2 border border-line rounded-xl sm:grid-cols-5 items-center">
                       <div>
-                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">Day of Week</label>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-muted mb-1">Day of Week</label>
                         <select
                           value={rule.dayOfWeek}
                           onChange={(e) => handlePricingRuleChange(idx, "dayOfWeek", e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                          className="w-full border border-line rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
                         >
                           {["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"].map((day) => (
                             <option key={day} value={day}>{day}</option>
@@ -545,30 +545,30 @@ const VenueAdminDashboard = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">Start Time</label>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-muted mb-1">Start Time</label>
                         <input
                           type="time"
                           value={rule.startTime}
                           onChange={(e) => handlePricingRuleChange(idx, "startTime", e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                          className="w-full border border-line rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">End Time</label>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-muted mb-1">End Time</label>
                         <input
                           type="time"
                           value={rule.endTime}
                           onChange={(e) => handlePricingRuleChange(idx, "endTime", e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                          className="w-full border border-line rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-3xs font-bold uppercase tracking-wider text-slate-500 mb-1">Hourly Rate (NPR)</label>
+                        <label className="block text-3xs font-bold uppercase tracking-wider text-muted mb-1">Hourly Rate (NPR)</label>
                         <input
                           type="number"
                           value={rule.hourlyRate}
                           onChange={(e) => handlePricingRuleChange(idx, "hourlyRate", Number(e.target.value))}
-                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                          className="w-full border border-line rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
                         />
                       </div>
                       <div className="flex justify-end pt-4 sm:pt-0">
@@ -585,18 +585,18 @@ const VenueAdminDashboard = () => {
                 )}
               </div>
 
-              <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
+              <div className="flex gap-3 justify-end border-t border-line pt-4">
                 <button
                   type="button"
                   onClick={() => setActiveTab("dashboard")}
-                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-line text-foreground rounded-lg text-sm font-semibold hover:bg-surface-2"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                  className="px-4 py-2 bg-charcoal text-white rounded-lg text-sm font-semibold hover:bg-charcoal disabled:opacity-50"
                 >
                   {saving ? "Saving..." : "Save Pricing Rules"}
                 </button>
@@ -606,14 +606,14 @@ const VenueAdminDashboard = () => {
 
           {/* Sub-View: All Bookings List */}
           {activeTab === "bookings" && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-              <h2 className="text-xl font-bold text-slate-900">All Booking Records</h2>
+            <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-4">
+              <h2 className="text-xl font-bold text-foreground">All Booking Records</h2>
               {allBookings.length === 0 ? (
-                <p className="text-slate-500 text-sm py-8 text-center border border-dashed border-slate-200 rounded-xl">No bookings have been made at this venue yet.</p>
+                <p className="text-muted text-sm py-8 text-center border border-dashed border-line rounded-xl">No bookings have been made at this venue yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50/50">
+                  <table className="w-full text-left text-sm text-muted">
+                    <thead className="text-xs uppercase tracking-wider text-muted border-b border-line bg-surface-2">
                       <tr>
                         <th className="py-3 px-4">User</th>
                         <th className="py-3 px-4">Court</th>
@@ -625,8 +625,8 @@ const VenueAdminDashboard = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {allBookings.map((b) => (
-                        <tr key={b.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-4 font-semibold text-slate-900">{b.user?.name}</td>
+                        <tr key={b.id} className="hover:bg-surface-2">
+                          <td className="py-3.5 px-4 font-semibold text-foreground">{b.user?.name}</td>
                           <td className="py-3.5 px-4 font-medium">{b.court?.name}</td>
                           <td className="py-3.5 px-4">
                             {new Date(b.startTime).toLocaleDateString("en-US", {
@@ -638,10 +638,10 @@ const VenueAdminDashboard = () => {
                           <td className="py-3.5 px-4 font-mono text-xs">
                             {new Date(b.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - {new Date(b.endTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                           </td>
-                          <td className="py-3.5 px-4 font-semibold text-slate-900">{formatCurrency(b.totalPrice)}</td>
+                          <td className="py-3.5 px-4 font-semibold text-foreground">{formatCurrency(b.totalPrice)}</td>
                           <td className="py-3.5 px-4">
                             <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full uppercase tracking-wider ${
-                              b.status === "CONFIRMED" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                              b.status === "CONFIRMED" ? "bg-pitch-soft text-pitch-strong" : "bg-rose-100 text-red-600"
                             }`}>
                               {b.status}
                             </span>
@@ -658,23 +658,23 @@ const VenueAdminDashboard = () => {
           {/* Sub-View: Home Teams */}
           {activeTab === "home-teams" && (
             <div className="space-y-8 animate-fadeIn">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-slate-900">Your Venue's Home Teams</h2>
-                  <p className="text-sm text-slate-500">{homeTeams.length} teams registered</p>
+                  <h2 className="text-xl font-bold text-foreground">Your Venue's Home Teams</h2>
+                  <p className="text-sm text-muted">{homeTeams.length} teams registered</p>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
                   {homeTeams.map((team) => (
-                    <div key={team.id} className="border border-slate-100 rounded-2xl p-5 bg-slate-50/50 space-y-4">
+                    <div key={team.id} className="border border-line rounded-2xl p-5 bg-surface-2 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">
+                          <div className="h-12 w-12 rounded-xl bg-charcoal text-white flex items-center justify-center font-bold">
                             {team.name[0]}
                           </div>
                           <div>
-                            <h3 className="font-bold text-slate-900">{team.name}</h3>
-                            <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{team.skillLevel}</p>
+                            <h3 className="font-bold text-foreground">{team.name}</h3>
+                            <p className="text-xs text-muted font-medium uppercase tracking-wider">{team.skillLevel}</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -689,7 +689,7 @@ const VenueAdminDashboard = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteHomeTeam(team.id)}
-                            className="text-rose-500 hover:text-rose-700 transition-colors"
+                            className="text-rose-500 hover:text-red-600 transition-colors"
                             title="Delete Team"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -700,10 +700,10 @@ const VenueAdminDashboard = () => {
                       </div>
 
                       <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Players</p>
+                        <p className="text-xs font-bold text-muted uppercase tracking-widest mb-2">Players</p>
                         <div className="flex flex-wrap gap-2">
                           {team.players?.map((p) => (
-                            <span key={p.id} className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 shadow-sm">
+                            <span key={p.id} className="px-2.5 py-1 bg-surface border border-line rounded-lg text-xs font-medium text-foreground shadow-sm">
                               {p.name}
                             </span>
                           ))}
@@ -711,10 +711,10 @@ const VenueAdminDashboard = () => {
                       </div>
 
                       <div className="pt-2">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Weekly Availability</p>
+                        <p className="text-xs font-bold text-muted uppercase tracking-widest mb-2">Weekly Availability</p>
                         <div className="space-y-1">
                           {team.availability?.map((a) => (
-                            <p key={a.id} className="text-xs text-slate-600 font-medium">
+                            <p key={a.id} className="text-xs text-muted font-medium">
                               {a.dayOfWeek}: {a.startTime} - {a.endTime}
                             </p>
                           ))}
@@ -723,20 +723,20 @@ const VenueAdminDashboard = () => {
                     </div>
                   ))}
                   {homeTeams.length === 0 && (
-                    <div className="md:col-span-2 py-10 text-center border border-dashed border-slate-200 rounded-2xl bg-white">
-                      <p className="text-slate-400 font-medium">No home teams created yet.</p>
-                      <p className="text-xs text-slate-400 mt-1">Register your venue's local squads to help players find matches.</p>
+                    <div className="md:col-span-2 py-10 text-center border border-dashed border-line rounded-2xl bg-surface">
+                      <p className="text-muted font-medium">No home teams created yet.</p>
+                      <p className="text-xs text-muted mt-1">Register your venue's local squads to help players find matches.</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              <form onSubmit={handleHomeTeamSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-                <div className="border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-bold text-slate-900">
+              <form onSubmit={handleHomeTeamSubmit} className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="border-b border-line pb-4">
+                  <h2 className="text-xl font-bold text-foreground">
                     {editingHomeTeamId ? "Update Home Team" : "Create New Home Team"}
                   </h2>
-                  <p className="text-sm text-slate-500 mt-1">
+                  <p className="text-sm text-muted mt-1">
                     {editingHomeTeamId ? "Modify the details of your squad." : "Add a squad that plays regularly at your venue."}
                   </p>
                 </div>
@@ -744,22 +744,22 @@ const VenueAdminDashboard = () => {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Team Name</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Team Name</label>
                       <input
                         type="text"
                         value={homeTeamForm.name}
                         onChange={(e) => setHomeTeamForm({ ...homeTeamForm, name: e.target.value })}
                         required
                         placeholder="e.g. Arena 5 Legends"
-                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                        className="w-full border border-line rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Team Skill Level</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Team Skill Level</label>
                       <select
                         value={homeTeamForm.skillLevel}
                         onChange={(e) => setHomeTeamForm({ ...homeTeamForm, skillLevel: e.target.value })}
-                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none"
+                        className="w-full border border-line rounded-xl px-4 py-2 text-sm focus:outline-none"
                       >
                         <option value="BEGINNER">Beginner</option>
                         <option value="INTERMEDIATE">Intermediate</option>
@@ -769,16 +769,16 @@ const VenueAdminDashboard = () => {
 
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Weekly Schedule</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-muted">Weekly Schedule</label>
                         <button type="button" onClick={addHomeTeamAvailabilityRow} className="text-xs font-bold text-blue-600 hover:underline">+ Add Slot</button>
                       </div>
                       <div className="space-y-2">
                         {homeTeamForm.availability.map((slot, idx) => (
-                          <div key={idx} className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
+                          <div key={idx} className="flex gap-2 items-center bg-surface-2 p-2 rounded-xl border border-line">
                             <select
                               value={slot.dayOfWeek}
                               onChange={(e) => handleHomeTeamAvailabilityChange(idx, "dayOfWeek", e.target.value)}
-                              className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-white"
+                              className="border border-line rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-surface"
                             >
                               {["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"].map(d => <option key={d} value={d}>{d.slice(0,3)}</option>)}
                             </select>
@@ -786,13 +786,13 @@ const VenueAdminDashboard = () => {
                               type="time"
                               value={slot.startTime}
                               onChange={(e) => handleHomeTeamAvailabilityChange(idx, "startTime", e.target.value)}
-                              className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-white"
+                              className="border border-line rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-surface"
                             />
                             <input
                               type="time"
                               value={slot.endTime}
                               onChange={(e) => handleHomeTeamAvailabilityChange(idx, "endTime", e.target.value)}
-                              className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-white"
+                              className="border border-line rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-surface"
                             />
                             <button type="button" onClick={() => removeHomeTeamAvailabilityRow(idx)} className="text-rose-500 font-bold p-1">&times;</button>
                           </div>
@@ -803,7 +803,7 @@ const VenueAdminDashboard = () => {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Players List</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-muted">Players List</label>
                       <button type="button" onClick={addPlayerRow} className="text-xs font-bold text-blue-600 hover:underline">+ Add Player</button>
                     </div>
                     <div className="grid gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
@@ -815,7 +815,7 @@ const VenueAdminDashboard = () => {
                             onChange={(e) => handlePlayerChange(idx, e.target.value)}
                             required
                             placeholder={`Player ${idx + 1} Name`}
-                            className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none"
+                            className="flex-1 border border-line rounded-xl px-4 py-2 text-sm focus:outline-none"
                           />
                           <button
                             type="button"
@@ -831,7 +831,7 @@ const VenueAdminDashboard = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                <div className="flex justify-end gap-3 pt-6 border-t border-line">
                   <button
                     type="button"
                     onClick={() => {
@@ -839,14 +839,14 @@ const VenueAdminDashboard = () => {
                       setHomeTeamForm(initialHomeTeamForm);
                       setEditingHomeTeamId(null);
                     }}
-                    className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+                    className="px-5 py-2.5 border border-line text-foreground rounded-xl text-sm font-semibold hover:bg-surface-2 transition-colors"
                   >
                     {editingHomeTeamId ? "Cancel Edit" : "Cancel"}
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="px-8 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm"
+                    className="px-8 py-2.5 bg-charcoal text-white rounded-xl text-sm font-semibold hover:bg-charcoal disabled:opacity-50 transition-colors shadow-sm"
                   >
                     {saving ? "Processing..." : editingHomeTeamId ? "Save Changes" : "Register Home Team"}
                   </button>
@@ -861,23 +861,23 @@ const VenueAdminDashboard = () => {
               {/* Stats Row */}
               <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
                 {[
-                  { label: "Total Revenue", value: formatCurrency(stats.totalRevenue), color: "text-emerald-600" },
-                  { label: "Total Bookings", value: stats.totalBookings, color: "text-slate-900" },
+                  { label: "Total Revenue", value: formatCurrency(stats.totalRevenue), color: "text-pitch" },
+                  { label: "Total Bookings", value: stats.totalBookings, color: "text-foreground" },
                   { label: "Active Courts", value: stats.activeCourts, color: "text-blue-600" },
                   { label: "Occupancy Rate", value: `${stats.occupancyRate}%`, color: "text-amber-600" }
                 ].map((stat, idx) => (
-                  <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                  <div key={idx} className="bg-surface border border-line rounded-2xl p-5 shadow-sm">
+                    <p className="text-sm font-medium text-muted">{stat.label}</p>
                     <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
                   </div>
                 ))}
               </div>
 
               {/* Chart Block */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Daily Revenue (Last 30 Days)</h2>
+              <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold tracking-tight text-foreground mb-5">Daily Revenue (Last 30 Days)</h2>
                 {chartData.length === 0 ? (
-                  <div className="h-72 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-400">
+                  <div className="h-72 border border-dashed border-line rounded-xl flex items-center justify-center text-muted">
                     No booking revenue data to chart.
                   </div>
                 ) : (
@@ -924,25 +924,25 @@ const VenueAdminDashboard = () => {
 
               <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
                 {/* Today's Booking Schedule */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Today's Booking Schedule</h2>
+                <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground mb-5">Today's Booking Schedule</h2>
                   
                   {todayBookings.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-slate-200 rounded-xl">
-                      <p className="text-slate-400 font-medium">No bookings scheduled for today</p>
-                      <p className="text-xs text-slate-400 mt-1">Users bookings today will appear here.</p>
+                    <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-line rounded-xl">
+                      <p className="text-muted font-medium">No bookings scheduled for today</p>
+                      <p className="text-xs text-muted mt-1">Users bookings today will appear here.</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {todayBookings.map((b) => (
-                        <div key={b.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                        <div key={b.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-line rounded-xl p-4 bg-surface-2">
                           <div>
-                            <p className="font-semibold text-slate-900">{b.user?.name}</p>
-                            <p className="text-xs text-slate-500 font-medium mt-0.5">
+                            <p className="font-semibold text-foreground">{b.user?.name}</p>
+                            <p className="text-xs text-muted font-medium mt-0.5">
                               Court: {b.court?.name} • Rate: {formatCurrency(b.totalPrice)}
                             </p>
                           </div>
-                          <div className="mt-2 sm:mt-0 font-mono text-xs font-bold text-slate-700 bg-white border border-slate-250/50 px-3 py-1.5 rounded-lg shadow-sm">
+                          <div className="mt-2 sm:mt-0 font-mono text-xs font-bold text-foreground bg-surface border border-slate-250/50 px-3 py-1.5 rounded-lg shadow-sm">
                             {new Date(b.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - {new Date(b.endTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                           </div>
                         </div>
@@ -952,36 +952,36 @@ const VenueAdminDashboard = () => {
                 </div>
 
                 {/* Quick Actions Panel */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900">Quick Actions</h2>
+                <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-4">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Quick Actions</h2>
                   <div className="grid gap-3">
                     <button
                       onClick={() => setActiveTab("courts")}
-                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                      className="w-full text-left p-4 rounded-xl border border-line hover:border-line hover:bg-surface-2 font-semibold text-sm text-foreground transition-colors flex items-center justify-between"
                     >
                       <span>Add New Court</span>
-                      <span className="text-slate-400">&rarr;</span>
+                      <span className="text-muted">&rarr;</span>
                     </button>
                     <button
                       onClick={() => setActiveTab("pricing")}
-                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                      className="w-full text-left p-4 rounded-xl border border-line hover:border-line hover:bg-surface-2 font-semibold text-sm text-foreground transition-colors flex items-center justify-between"
                     >
                       <span>Configure Pricing Rules</span>
-                      <span className="text-slate-400">&rarr;</span>
+                      <span className="text-muted">&rarr;</span>
                     </button>
                     <button
                       onClick={() => setActiveTab("home-teams")}
-                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                      className="w-full text-left p-4 rounded-xl border border-line hover:border-line hover:bg-surface-2 font-semibold text-sm text-foreground transition-colors flex items-center justify-between"
                     >
                       <span>Manage Home Teams</span>
-                      <span className="text-slate-400">&rarr;</span>
+                      <span className="text-muted">&rarr;</span>
                     </button>
                     <button
                       onClick={() => setActiveTab("bookings")}
-                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                      className="w-full text-left p-4 rounded-xl border border-line hover:border-line hover:bg-surface-2 font-semibold text-sm text-foreground transition-colors flex items-center justify-between"
                     >
                       <span>View All Bookings</span>
-                      <span className="text-slate-400">&rarr;</span>
+                      <span className="text-muted">&rarr;</span>
                     </button>
                   </div>
                 </div>

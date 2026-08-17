@@ -167,9 +167,9 @@ const TeamsPage = () => {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-white/70 bg-white/85 p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Teams</h1>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
+      <section className="rounded-4xl border border-line bg-surface p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Teams</h1>
+        <p className="mt-3 text-sm leading-7 text-muted">
           Create a team, publish recruitment needs, invite players, and approve join requests
           from one compact workspace.
         </p>
@@ -179,46 +179,46 @@ const TeamsPage = () => {
       <Notice tone="error">{error}</Notice>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">My Teams</h2>
+        <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">My Teams</h2>
           <form onSubmit={handleCreate} className="mt-5 flex gap-2">
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="New team name"
-              className="flex-1 border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="flex-1 border border-line rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             />
             <button
               type="submit"
-              className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800"
+              className="rounded-2xl bg-charcoal px-5 py-3 text-sm font-medium text-white hover:bg-charcoal"
             >
               Create
             </button>
           </form>
           <div className="mt-5 space-y-3">
             {myTeams.map((team) => (
-              <div key={team.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="text-lg font-semibold text-slate-950">{team.name}</p>
-                <p className="mt-1 text-sm text-slate-500">
+              <div key={team.id} className="rounded-2xl border border-line bg-surface-2 p-4">
+                <p className="text-lg font-semibold text-foreground">{team.name}</p>
+                <p className="mt-1 text-sm text-muted">
                   {team.venue?.name || "Community team"}
                 </p>
-                <p className="mt-2 text-sm text-slate-600">Members: {team.members?.length || 0}</p>
+                <p className="mt-2 text-sm text-muted">Members: {team.members?.length || 0}</p>
               </div>
             ))}
             {myTeams.length === 0 && (
-              <p className="text-sm text-slate-600">You do not own any teams yet.</p>
+              <p className="text-sm text-muted">You do not own any teams yet.</p>
             )}
           </div>
         </section>
 
-        <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Recruit Players</h2>
+        <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Recruit Players</h2>
           <form onSubmit={handlePostCreate} className="mt-5 space-y-3">
             <select
               value={postForm.teamId}
               onChange={(e) => setPostForm((prev) => ({ ...prev, teamId: e.target.value }))}
-              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
             >
               <option value="">Choose team</option>
               {myTeams.map((team) => (
@@ -232,14 +232,14 @@ const TeamsPage = () => {
               value={postForm.title}
               onChange={(e) => setPostForm((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="Post title"
-              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
             />
             <textarea
               value={postForm.description}
               onChange={(e) => setPostForm((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="What kind of player do you need?"
               rows="3"
-              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
             />
             <div className="grid gap-3 sm:grid-cols-2">
               <select
@@ -247,7 +247,7 @@ const TeamsPage = () => {
                 onChange={(e) =>
                   setPostForm((prev) => ({ ...prev, neededPosition: e.target.value }))
                 }
-                className="border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                className="border border-line rounded-xl px-3 py-2.5 text-sm"
               >
                 <option value="">Any position</option>
                 {PLAYER_POSITIONS.map((option) => (
@@ -261,7 +261,7 @@ const TeamsPage = () => {
                 onChange={(e) =>
                   setPostForm((prev) => ({ ...prev, skillLevel: e.target.value }))
                 }
-                className="border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                className="border border-line rounded-xl px-3 py-2.5 text-sm"
               >
                 <option value="">Any skill</option>
                 {SKILL_LEVELS.map((option) => (
@@ -271,7 +271,7 @@ const TeamsPage = () => {
                 ))}
               </select>
             </div>
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <label className="flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={postForm.visibility}
@@ -284,7 +284,7 @@ const TeamsPage = () => {
             <button
               type="submit"
               disabled={myTeams.length === 0}
-              className="w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+              className="w-full rounded-2xl bg-charcoal px-5 py-3 text-sm font-medium text-white hover:bg-charcoal disabled:opacity-50"
             >
               Publish Post
             </button>
@@ -293,13 +293,13 @@ const TeamsPage = () => {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Invite Player</h2>
+        <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Invite Player</h2>
           <form onSubmit={handleInvite} className="mt-5 space-y-3">
             <select
               value={inviteForm.teamId}
               onChange={(e) => setInviteForm((prev) => ({ ...prev, teamId: e.target.value }))}
-              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
             >
               <option value="">Choose team</option>
               {myTeams.map((team) => (
@@ -313,7 +313,7 @@ const TeamsPage = () => {
               onChange={(e) =>
                 setInviteForm((prev) => ({ ...prev, playerProfileId: e.target.value }))
               }
-              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
             >
               <option value="">Choose player</option>
               {players.map((player) => (
@@ -327,40 +327,40 @@ const TeamsPage = () => {
               value={inviteForm.message}
               onChange={(e) => setInviteForm((prev) => ({ ...prev, message: e.target.value }))}
               placeholder="Optional message"
-              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
             />
             <button
               type="submit"
               disabled={myTeams.length === 0}
-              className="w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+              className="w-full rounded-2xl bg-charcoal px-5 py-3 text-sm font-medium text-white hover:bg-charcoal disabled:opacity-50"
             >
               Send Invitation
             </button>
           </form>
         </section>
 
-        <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Join Requests</h2>
+        <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Join Requests</h2>
           <div className="mt-5 space-y-3">
             {applicationRequests.map((request) => (
-              <div key={request.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="font-semibold text-slate-950">
+              <div key={request.id} className="rounded-2xl border border-line bg-surface-2 p-4">
+                <p className="font-semibold text-foreground">
                   {request.playerProfile?.user?.name} wants to join {request.team?.name}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted">
                   {request.post?.title || "Recruitment post"} - {request.status}
                 </p>
                 {request.status === "PENDING" && (
                   <div className="mt-3 flex gap-2">
                     <button
                       onClick={() => handleDecision(request.id, "ACCEPTED")}
-                      className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-medium text-white"
+                      className="rounded-xl bg-pitch px-3 py-2 text-sm font-medium text-white"
                     >
                       Approve
                     </button>
                     <button
                       onClick={() => handleDecision(request.id, "REJECTED")}
-                      className="rounded-xl bg-slate-200 px-3 py-2 text-sm font-medium text-slate-800"
+                      className="rounded-xl bg-surface-2 px-3 py-2 text-sm font-medium text-foreground"
                     >
                       Reject
                     </button>
@@ -369,70 +369,70 @@ const TeamsPage = () => {
               </div>
             ))}
             {applicationRequests.length === 0 && (
-              <p className="text-sm text-slate-600">No join requests yet.</p>
+              <p className="text-sm text-muted">No join requests yet.</p>
             )}
           </div>
         </section>
       </div>
 
-      <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Open Recruitment</h2>
+      <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Open Recruitment</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {posts.map((post) => (
-            <div key={post.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="font-semibold text-slate-950">{post.title}</p>
-              <p className="mt-1 text-sm text-slate-500">
+            <div key={post.id} className="rounded-2xl border border-line bg-surface-2 p-4">
+              <p className="font-semibold text-foreground">{post.title}</p>
+              <p className="mt-1 text-sm text-muted">
                 {post.team?.name} - {post.team?.venue?.name || "Community team"}
               </p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
+              <p className="mt-3 text-sm leading-6 text-muted">
                 {post.description || "This team is accepting player requests."}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-muted">
                   {post.neededPosition?.replaceAll("_", " ") || "Any position"}
                 </span>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-muted">
                   {post.skillLevel || "Any skill"}
                 </span>
               </div>
               <button
                 onClick={() => handleApply(post.id)}
-                className="mt-4 w-full rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
+                className="mt-4 w-full rounded-xl bg-charcoal px-4 py-2.5 text-sm font-medium text-white hover:bg-charcoal"
               >
                 Request to Join
               </button>
             </div>
           ))}
           {posts.length === 0 && (
-            <p className="text-sm text-slate-600">No open recruitment posts yet.</p>
+            <p className="text-sm text-muted">No open recruitment posts yet.</p>
           )}
         </div>
       </section>
 
-      <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-950">All Teams</h2>
+      <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">All Teams</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {teams.map((team) => (
-            <div key={team.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="text-lg font-semibold text-slate-950">{team.name}</p>
-              <p className="mt-1 text-sm text-slate-500">Owner: {team.owner?.name || "Unknown"}</p>
-              <p className="mt-2 text-sm text-slate-600">Members: {team.members?.length || 0}</p>
+            <div key={team.id} className="rounded-2xl border border-line bg-surface-2 p-4">
+              <p className="text-lg font-semibold text-foreground">{team.name}</p>
+              <p className="mt-1 text-sm text-muted">Owner: {team.owner?.name || "Unknown"}</p>
+              <p className="mt-2 text-sm text-muted">Members: {team.members?.length || 0}</p>
             </div>
           ))}
-          {teams.length === 0 && <p className="text-sm text-slate-600">No teams available yet.</p>}
+          {teams.length === 0 && <p className="text-sm text-muted">No teams available yet.</p>}
         </div>
       </section>
 
       {invitationRequests.length > 0 && (
-        <section className="rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Sent Invitations</h2>
+        <section className="rounded-3xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Sent Invitations</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {invitationRequests.map((request) => (
-              <div key={request.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="font-semibold text-slate-950">
+              <div key={request.id} className="rounded-2xl border border-line bg-surface-2 p-4">
+                <p className="font-semibold text-foreground">
                   {request.playerProfile?.user?.name} - {request.team?.name}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">Status: {request.status}</p>
+                <p className="mt-1 text-sm text-muted">Status: {request.status}</p>
               </div>
             ))}
           </div>

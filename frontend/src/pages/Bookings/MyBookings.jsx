@@ -38,9 +38,9 @@ const MyBookings = () => {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-white/70 bg-white/85 p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">My Bookings</h1>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
+      <section className="rounded-4xl border border-line bg-surface p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">My Bookings</h1>
+        <p className="mt-3 text-sm leading-7 text-muted">
           Track your booked slots, review venue details, and cancel only when you are within the 2-hour window before start time.
         </p>
       </section>
@@ -52,29 +52,29 @@ const MyBookings = () => {
         {bookings.map((booking) => (
           <div
             key={booking.id}
-            className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_10px_36px_rgba(15,23,42,0.05)]"
+            className="rounded-3xl border border-line bg-surface p-5 shadow-[0_10px_36px_rgba(15,23,42,0.05)]"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-lg font-semibold text-slate-950">
+                <p className="text-lg font-semibold text-foreground">
                   {booking.court?.venue?.name} - {booking.court?.name}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted">
                   {new Date(booking.startTime).toLocaleString()} to{" "}
                   {new Date(booking.endTime).toLocaleTimeString()}
                 </p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Total</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">Rs. {booking.totalPrice}</p>
+                <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted">Total</p>
+                  <p className="mt-1 text-lg font-semibold text-foreground">Rs. {booking.totalPrice}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Status</p>
+                <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted">Status</p>
                   <p
                     className={`mt-1 text-sm font-semibold ${
-                      booking.status === "CANCELLED" ? "text-rose-700" : "text-emerald-700"
+                      booking.status === "CANCELLED" ? "text-red-600" : "text-pitch-strong"
                     }`}
                   >
                     {booking.status}
@@ -83,12 +83,12 @@ const MyBookings = () => {
                 {booking.status !== "CANCELLED" ? (
                   <button
                     onClick={() => handleCancel(booking.id)}
-                    className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-medium text-white hover:bg-rose-700"
+                    className="rounded-2xl bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700"
                   >
                     Cancel booking
                   </button>
                 ) : (
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                  <div className="rounded-2xl bg-surface-2 px-4 py-3 text-sm text-muted">
                     This booking has already been cancelled.
                   </div>
                 )}
@@ -98,7 +98,7 @@ const MyBookings = () => {
         ))}
 
         {bookings.length === 0 && (
-          <p className="text-sm text-slate-600">You have no bookings yet.</p>
+          <p className="text-sm text-muted">You have no bookings yet.</p>
         )}
       </div>
     </div>

@@ -167,21 +167,21 @@ const PlayerProfile = () => {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-white/70 bg-white/85 p-6 shadow-[0_16px_48px_rgba(15,23,42,0.06)] md:p-8">
+      <section className="rounded-4xl border border-line bg-surface p-6 shadow-[0_16px_48px_rgba(15,23,42,0.06)] md:p-8">
         <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-6">
             <div className="flex items-start gap-5">
               <img
                 src={resolveAssetUrl(form.profileImageUrl) || fallbackPlayerImage}
                 alt={profile?.user?.name || "Player"}
-                className="h-28 w-28 rounded-[24px] object-cover shadow-sm"
+                className="h-28 w-28 rounded-3xl object-cover shadow-sm"
               />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-emerald-700">Player panel</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                <p className="text-xs uppercase tracking-[0.18em] text-pitch-strong">Player panel</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
                   {profile?.user?.name || "Complete your profile"}
                 </h1>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   Build a strong player card with status, role, and availability so teams and
                   venue communities can identify the right fit quickly.
                 </p>
@@ -207,33 +207,33 @@ const PlayerProfile = () => {
                   value: String(profile?.teamMembers?.length || 0)
                 }
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl bg-slate-50 px-4 py-4">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">{item.label}</p>
-                  <p className="mt-2 text-lg font-semibold text-slate-950">{item.value}</p>
+                <div key={item.label} className="rounded-2xl bg-surface-2 px-4 py-4">
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted">{item.label}</p>
+                  <p className="mt-2 text-lg font-semibold text-foreground">{item.value}</p>
                 </div>
               ))}
             </div>
 
-            <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-5">
-              <h2 className="text-lg font-semibold text-slate-950">Recruitment Status</h2>
+            <section className="rounded-3xl border border-line bg-surface-2 p-5">
+              <h2 className="text-lg font-semibold text-foreground">Recruitment Status</h2>
               <div className="mt-4 space-y-3">
                 {requests.map((request) => (
-                  <div key={request.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="font-medium text-slate-950">{request.team?.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">
+                  <div key={request.id} className="rounded-2xl border border-line bg-surface p-4">
+                    <p className="font-medium text-foreground">{request.team?.name}</p>
+                    <p className="mt-1 text-sm text-muted">
                       {request.postId ? `Join request: ${request.post?.title || "Recruitment post"}` : "Team invitation"} - {request.status}
                     </p>
                     {request.status === "PENDING" && !request.postId && (
                       <div className="mt-3 flex gap-2">
                         <button
                           onClick={() => handleRespond(request.id, "ACCEPTED")}
-                          className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-medium text-white"
+                          className="rounded-xl bg-pitch px-3 py-2 text-sm font-medium text-white"
                         >
                           Accept
                         </button>
                         <button
                           onClick={() => handleRespond(request.id, "REJECTED")}
-                          className="rounded-xl bg-slate-200 px-3 py-2 text-sm font-medium text-slate-800"
+                          className="rounded-xl bg-surface-2 px-3 py-2 text-sm font-medium text-foreground"
                         >
                           Reject
                         </button>
@@ -242,19 +242,19 @@ const PlayerProfile = () => {
                   </div>
                 ))}
                 {requests.length === 0 && (
-                  <p className="text-sm text-slate-500">No recruitment activity yet.</p>
+                  <p className="text-sm text-muted">No recruitment activity yet.</p>
                 )}
               </div>
             </section>
           </div>
 
-          <section className="rounded-[24px] border border-slate-200 bg-white p-6">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Profile Details</h2>
+          <section className="rounded-3xl border border-line bg-surface p-6">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Profile Details</h2>
             <Notice tone="error" className="mt-4">{error}</Notice>
             <Notice tone="success" className="mt-4">{success}</Notice>
             <form onSubmit={handleSubmit} className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Profile image URL
                 </label>
                 <input
@@ -263,9 +263,9 @@ const PlayerProfile = () => {
                   value={form.profileImageUrl}
                   onChange={handleChange}
                   placeholder="https://..."
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
-                <label className="mt-3 block text-sm font-medium text-slate-700 mb-1">
+                <label className="mt-3 block text-sm font-medium text-foreground mb-1">
                   Or upload profile image
                 </label>
                 <input
@@ -273,14 +273,14 @@ const PlayerProfile = () => {
                   accept="image/*"
                   onChange={handleImageUpload}
                   disabled={uploading}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-1.5 file:text-sm file:font-medium"
                 />
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-muted">
                   Accepted: JPG, PNG, WEBP, GIF (max 5MB).
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Age</label>
                 <input
                   type="number"
                   name="age"
@@ -289,46 +289,46 @@ const PlayerProfile = () => {
                   required
                   min="10"
                   max="70"
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
+                <label className="block text-sm font-medium text-foreground mb-1">City</label>
                 <input
                   type="text"
                   name="city"
                   value={form.city}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
                 <input
                   type="text"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Jersey Number</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Jersey Number</label>
                 <input
                   type="number"
                   name="jerseyNumber"
                   value={form.jerseyNumber}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Position</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Position</label>
                 <select
                   name="position"
                   value={form.position}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 >
                   {PLAYER_POSITIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -338,12 +338,12 @@ const PlayerProfile = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Skill Level</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Skill Level</label>
                 <select
                   name="skill"
                   value={form.skill}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 >
                   {SKILL_LEVELS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -353,12 +353,12 @@ const PlayerProfile = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Foot</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Preferred Foot</label>
                 <select
                   name="preferredFoot"
                   value={form.preferredFoot}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 >
                   {PREFERRED_FEET.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -368,12 +368,12 @@ const PlayerProfile = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Playing Status</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Playing Status</label>
                 <select
                   name="status"
                   value={form.status}
                   onChange={handleChange}
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 >
                   {PLAYER_STATUSES.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -383,7 +383,7 @@ const PlayerProfile = () => {
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Recruitment Availability
                 </label>
                 <input
@@ -392,24 +392,24 @@ const PlayerProfile = () => {
                   value={form.preferredPlayTime}
                   onChange={handleChange}
                   placeholder="Available for recruitment on weekday evenings, Friday night, early mornings"
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Bio</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Bio</label>
                 <textarea
                   name="bio"
                   value={form.bio}
                   onChange={handleChange}
                   rows="4"
-                  className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div className="md:col-span-2">
                 <button
                   type="submit"
                   disabled={saving || uploading}
-                  className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  className="rounded-2xl bg-charcoal px-5 py-3 text-sm font-medium text-white transition hover:bg-charcoal disabled:opacity-60"
                 >
                   {saving ? "Saving..." : uploading ? "Uploading image..." : "Save Profile"}
                 </button>

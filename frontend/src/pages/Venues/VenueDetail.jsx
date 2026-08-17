@@ -179,10 +179,10 @@ const VenueDetail = () => {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white/85 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-4xl border border-line bg-surface shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
         <div className="grid gap-0 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="p-6 md:p-8">
-            <div className="overflow-hidden rounded-[24px]">
+            <div className="overflow-hidden rounded-3xl">
               <img
                 src={resolveAssetUrl(activeImage?.imageUrl) || fallbackVenueImage}
                 alt={activeImage?.caption || venue.name}
@@ -196,7 +196,7 @@ const VenueDetail = () => {
                   type="button"
                   onClick={() => setActiveImageIndex(index)}
                   className={`overflow-hidden rounded-2xl border ${
-                    index === activeImageIndex ? "border-slate-900" : "border-slate-200"
+                    index === activeImageIndex ? "border-slate-900" : "border-line"
                   }`}
                 >
                   <img
@@ -209,11 +209,11 @@ const VenueDetail = () => {
             </div>
           </div>
 
-          <div className="p-6 md:p-8 xl:border-l xl:border-slate-200">
-            <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+          <div className="p-6 md:p-8 xl:border-l xl:border-line">
+            <div className="inline-flex items-center rounded-full border border-emerald-200 bg-pitch-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-pitch-strong">
               Venue profile
             </div>
-            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground">
               {venue.name}
             </h1>
             {venue.mapsUrl ? (
@@ -221,35 +221,35 @@ const VenueDetail = () => {
                 href={venue.mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 block text-sm text-slate-500 hover:text-slate-900 hover:underline"
+                className="mt-2 block text-sm text-muted hover:text-foreground hover:underline"
               >
                 {venue.address}, {venue.city}
               </a>
             ) : (
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-muted">
                 {venue.address}, {venue.city}
               </p>
             )}
             {venue.description && (
-              <p className="mt-5 text-sm leading-7 text-slate-600">{venue.description}</p>
+              <p className="mt-5 text-sm leading-7 text-muted">{venue.description}</p>
             )}
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Base rate</p>
-                <p className="mt-1 text-xl font-semibold text-slate-950">Rs. {venue.hourlyRate}</p>
+              <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted">Base rate</p>
+                <p className="mt-1 text-xl font-semibold text-foreground">Rs. {venue.hourlyRate}</p>
               </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Active courts</p>
-                <p className="mt-1 text-xl font-semibold text-slate-950">{activeCourts.length}</p>
+              <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted">Active courts</p>
+                <p className="mt-1 text-xl font-semibold text-foreground">{activeCourts.length}</p>
               </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Gallery</p>
-                <p className="mt-1 text-xl font-semibold text-slate-950">{galleryImages.length} photos</p>
+              <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted">Gallery</p>
+                <p className="mt-1 text-xl font-semibold text-foreground">{galleryImages.length} photos</p>
               </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Contact</p>
-                <p className="mt-1 text-sm font-medium text-slate-950">{venue.phone || "Not added yet"}</p>
+              <div className="rounded-2xl bg-surface-2 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted">Contact</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{venue.phone || "Not added yet"}</p>
               </div>
             </div>
             {venue.mapsUrl && (
@@ -257,7 +257,7 @@ const VenueDetail = () => {
                 href={venue.mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-6 inline-flex rounded-2xl bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                className="mt-6 inline-flex rounded-2xl bg-charcoal px-5 py-3 text-sm font-medium text-white transition hover:bg-charcoal"
               >
                 Open Location
               </a>
@@ -286,13 +286,13 @@ const VenueDetail = () => {
             interactive={Boolean(user)}
           />
 
-          <section className="rounded-[28px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+          <section className="rounded-4xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               Home Teams
             </h2>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {homeTeams.map((team) => (
-                <div key={team.id} className="rounded-2xl bg-slate-50 p-4">
+                <div key={team.id} className="rounded-2xl bg-surface-2 p-4">
                   <div className="flex items-center gap-3">
                     <img
                       src={resolveAssetUrl(team.imageUrl) || fallbackVenueImage}
@@ -300,20 +300,20 @@ const VenueDetail = () => {
                       className="h-14 w-14 rounded-xl object-cover"
                     />
                     <div>
-                      <p className="font-medium text-slate-950">{team.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="font-medium text-foreground">{team.name}</p>
+                      <p className="mt-1 text-sm text-muted">
                         {team.players?.length || 0} players - {team.skillLevel || "Open"}
                       </p>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {(team.players || []).slice(0, 5).map((player) => (
-                      <span key={player.id} className="rounded-full bg-white px-3 py-1 text-xs text-slate-600">
+                      <span key={player.id} className="rounded-full bg-surface px-3 py-1 text-xs text-muted">
                         {player.name}
                       </span>
                     ))}
                   </div>
-                  <p className="mt-3 text-sm text-slate-600">
+                  <p className="mt-3 text-sm text-muted">
                     {(team.availability || [])
                       .map((slot) => `${slot.dayOfWeek} ${slot.startTime}-${slot.endTime}`)
                       .join(", ")}
@@ -321,23 +321,23 @@ const VenueDetail = () => {
                 </div>
               ))}
               {homeTeams.length === 0 && (
-                <p className="text-sm text-slate-500">No home teams listed for this venue yet.</p>
+                <p className="text-sm text-muted">No home teams listed for this venue yet.</p>
               )}
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+          <section className="rounded-4xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               Weekly Pricing Rules
             </h2>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {(venue.pricingRules || []).map((rule) => (
-                <div key={rule.id} className="rounded-2xl bg-slate-50 p-4">
-                  <p className="font-medium text-slate-950">{rule.dayOfWeek}</p>
-                  <p className="mt-1 text-sm text-slate-500">
+                <div key={rule.id} className="rounded-2xl bg-surface-2 p-4">
+                  <p className="font-medium text-foreground">{rule.dayOfWeek}</p>
+                  <p className="mt-1 text-sm text-muted">
                     {rule.startTime} - {rule.endTime}
                   </p>
-                  <p className="mt-3 text-sm text-slate-700">
+                  <p className="mt-3 text-sm text-foreground">
                     Rs. <span className="font-semibold">{rule.hourlyRate}</span> / hour
                   </p>
                 </div>
@@ -347,10 +347,10 @@ const VenueDetail = () => {
         </div>
 
         <aside className="space-y-6">
-          <section className="rounded-[28px] border border-white/70 bg-white/85 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Book This Venue</h2>
+          <section className="rounded-4xl border border-line bg-surface p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Book This Venue</h2>
             {!user ? (
-              <p className="mt-3 text-sm leading-6 text-slate-600">
+              <p className="mt-3 text-sm leading-6 text-muted">
                 Login as a player or user to book directly from the schedule grid and lock in
                 your preferred court.
               </p>
@@ -359,12 +359,12 @@ const VenueDetail = () => {
                 <Notice tone="success">{message}</Notice>
                 <Notice tone="error">{error}</Notice>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Court</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Court</label>
                   <select
                     name="courtId"
                     value={bookingForm.courtId}
                     onChange={handleBookingChange}
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                    className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                   >
                     {activeCourts.map((court) => (
                       <option key={court.id} value={court.id}>
@@ -374,36 +374,36 @@ const VenueDetail = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Date</label>
                   <input
                     type="date"
                     name="date"
                     value={bookingForm.date}
                     onChange={handleBookingChange}
                     min={new Date().toISOString().split("T")[0]}
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                    className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Start time</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Start time</label>
                   <input
                     type="time"
                     name="startHour"
                     value={bookingForm.startHour}
                     onChange={handleBookingChange}
                     step="3600"
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                    className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Duration</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Duration</label>
                   <select
                     name="durationHours"
                     value={bookingForm.durationHours}
                     onChange={handleBookingChange}
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm"
+                    className="w-full border border-line rounded-xl px-3 py-2.5 text-sm"
                   >
                     <option value={1}>1 hour</option>
                     <option value={2}>2 hours</option>
@@ -411,14 +411,14 @@ const VenueDetail = () => {
                   </select>
                 </div>
                 {pricingPreview && (
-                  <p className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <p className="rounded-2xl bg-surface-2 px-4 py-3 text-sm text-muted">
                     {pricingPreview}
                   </p>
                 )}
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full rounded-2xl bg-slate-950 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  className="w-full rounded-2xl bg-charcoal py-3 text-sm font-medium text-white transition hover:bg-charcoal disabled:opacity-60"
                 >
                   {submitting ? "Booking..." : "Confirm Booking"}
                 </button>

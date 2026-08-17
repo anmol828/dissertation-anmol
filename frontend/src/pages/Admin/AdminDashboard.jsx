@@ -217,17 +217,17 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Welcome Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-surface rounded-2xl p-6 border border-line shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             System Administration Panel
           </h1>
-          <p className="text-slate-500 mt-1">Monitor users, futsal centers, booking statistics, and revenue collections.</p>
+          <p className="text-muted mt-1">Monitor users, futsal centers, booking statistics, and revenue collections.</p>
         </div>
         <div>
           <button
             onClick={() => { setActiveTab("create-venue"); setFormData(initialFormState); setError(""); setSuccess(""); }}
-            className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 shadow-sm transition-colors"
+            className="px-4 py-2 bg-charcoal text-white rounded-xl text-sm font-semibold hover:bg-charcoal shadow-sm transition-colors"
           >
             + Add New Venue & Admin
           </button>
@@ -242,24 +242,24 @@ const AdminDashboard = () => {
         <div className="space-y-6 animate-pulse">
           <div className="grid gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="h-28 bg-white border border-slate-200 rounded-2xl"></div>
+              <div key={idx} className="h-28 bg-surface border border-line rounded-2xl"></div>
             ))}
           </div>
-          <div className="h-96 bg-white border border-slate-200 rounded-2xl"></div>
+          <div className="h-96 bg-surface border border-line rounded-2xl"></div>
         </div>
       ) : (
         <>
           {/* Sub-View: Create or Edit Venue Form */}
           {(activeTab === "create-venue" || activeTab === "edit-venue") && (
-            <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-8 animate-fadeIn">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h2 className="text-xl font-bold text-slate-900">
+            <form onSubmit={handleSubmit} className="bg-surface border border-line rounded-2xl p-6 shadow-sm space-y-8 animate-fadeIn">
+              <div className="flex items-center justify-between border-b border-line pb-4">
+                <h2 className="text-xl font-bold text-foreground">
                   {activeTab === "create-venue" ? "Register New Venue & Admin" : "Update Venue & Admin Account"}
                 </h2>
                 <button
                   type="button"
                   onClick={() => setActiveTab("dashboard")}
-                  className="text-sm font-medium text-slate-500 hover:text-slate-800"
+                  className="text-sm font-medium text-muted hover:text-foreground"
                 >
                   Cancel and Return
                 </button>
@@ -267,58 +267,58 @@ const AdminDashboard = () => {
 
               {/* Step 1: Owner Details */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Section 1: Venue Admin Account</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted">Section 1: Venue Admin Account</h3>
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Admin Full Name</label>
-                    <input type="text" name="ownerName" value={formData.ownerName} onChange={handleFormChange} required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="e.g. John Doe" />
+                    <label className="block text-xs font-bold text-muted mb-1">Admin Full Name</label>
+                    <input type="text" name="ownerName" value={formData.ownerName} onChange={handleFormChange} required className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="e.g. John Doe" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Admin Email Address</label>
-                    <input type="email" name="ownerEmail" value={formData.ownerEmail} onChange={handleFormChange} required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="owner@futsal.com" />
+                    <label className="block text-xs font-bold text-muted mb-1">Admin Email Address</label>
+                    <input type="email" name="ownerEmail" value={formData.ownerEmail} onChange={handleFormChange} required className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="owner@futsal.com" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                    <label className="block text-xs font-bold text-muted mb-1">
                       {activeTab === "create-venue" ? "Temporary Password" : "Reset Password (Optional)"}
                     </label>
-                    <input type="password" name="ownerPassword" value={formData.ownerPassword} onChange={handleFormChange} required={activeTab === "create-venue"} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="Min 6 chars" />
+                    <input type="password" name="ownerPassword" value={formData.ownerPassword} onChange={handleFormChange} required={activeTab === "create-venue"} className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="Min 6 chars" />
                   </div>
                 </div>
               </div>
 
               {/* Step 2: Venue Profile */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Section 2: Venue Profile Details</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted">Section 2: Venue Profile Details</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Futsal Center Name</label>
-                    <input type="text" name="venueName" value={formData.venueName} onChange={handleFormChange} required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                    <label className="block text-xs font-bold text-muted mb-1">Futsal Center Name</label>
+                    <input type="text" name="venueName" value={formData.venueName} onChange={handleFormChange} required className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Base Hourly Rate (NPR)</label>
-                    <input type="number" name="hourlyRate" value={formData.hourlyRate} onChange={handleFormChange} required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                    <label className="block text-xs font-bold text-muted mb-1">Base Hourly Rate (NPR)</label>
+                    <input type="number" name="hourlyRate" value={formData.hourlyRate} onChange={handleFormChange} required className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none" />
                   </div>
                   <div className="sm:col-span-2 grid gap-4 sm:grid-cols-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1">Address</label>
-                      <input type="text" name="address" value={formData.address} onChange={handleFormChange} required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <label className="block text-xs font-bold text-muted mb-1">Address</label>
+                      <input type="text" name="address" value={formData.address} onChange={handleFormChange} required className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1">City</label>
-                      <input type="text" name="city" value={formData.city} onChange={handleFormChange} required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <label className="block text-xs font-bold text-muted mb-1">City</label>
+                      <input type="text" name="city" value={formData.city} onChange={handleFormChange} required className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1">Contact Phone</label>
-                      <input type="text" name="phone" value={formData.phone} onChange={handleFormChange} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <label className="block text-xs font-bold text-muted mb-1">Contact Phone</label>
+                      <input type="text" name="phone" value={formData.phone} onChange={handleFormChange} className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Google Maps URL (Location)</label>
-                    <input type="url" name="mapsUrl" value={formData.mapsUrl} onChange={handleFormChange} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="https://maps.google.com/..." />
+                    <label className="block text-xs font-bold text-muted mb-1">Google Maps URL (Location)</label>
+                    <input type="url" name="mapsUrl" value={formData.mapsUrl} onChange={handleFormChange} className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500" placeholder="https://maps.google.com/..." />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Venue Description</label>
-                    <textarea name="description" value={formData.description} onChange={handleFormChange} rows="3" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"></textarea>
+                    <label className="block text-xs font-bold text-muted mb-1">Venue Description</label>
+                    <textarea name="description" value={formData.description} onChange={handleFormChange} rows="3" className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:outline-none"></textarea>
                   </div>
                 </div>
               </div>
@@ -327,14 +327,14 @@ const AdminDashboard = () => {
               <div className="grid gap-8 sm:grid-cols-2">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Section 3: Courts</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted">Section 3: Courts</h3>
                     <button type="button" onClick={addCourtRow} className="text-xs font-bold text-blue-600 hover:underline">+ Add Court</button>
                   </div>
                   <div className="space-y-2">
                     {formData.courts.map((court, idx) => (
                       <div key={idx} className="flex gap-2 items-center">
-                        <input type="text" value={court.name} onChange={(e) => handleCourtChange(idx, "name", e.target.value)} required placeholder="Court name" className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm" />
-                        <label className="flex items-center gap-1.5 text-xs text-slate-500 px-2">
+                        <input type="text" value={court.name} onChange={(e) => handleCourtChange(idx, "name", e.target.value)} required placeholder="Court name" className="flex-1 border border-line rounded-lg px-3 py-1.5 text-sm" />
+                        <label className="flex items-center gap-1.5 text-xs text-muted px-2">
                           <input type="checkbox" checked={court.isActive} onChange={(e) => handleCourtChange(idx, "isActive", e.target.checked)} />
                           Active
                         </label>
@@ -346,18 +346,18 @@ const AdminDashboard = () => {
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Section 4: Weekly Pricing</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted">Section 4: Weekly Pricing</h3>
                     <button type="button" onClick={addPricingRuleRow} className="text-xs font-bold text-blue-600 hover:underline">+ Add Rule</button>
                   </div>
                   <div className="space-y-2 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
                     {formData.pricingRules.map((rule, idx) => (
-                      <div key={idx} className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr_auto] gap-2 items-center bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <select value={rule.dayOfWeek} onChange={(e) => handlePricingRuleChange(idx, "dayOfWeek", e.target.value)} className="border border-slate-200 rounded px-1 py-1 text-xs">
+                      <div key={idx} className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr_auto] gap-2 items-center bg-surface-2 p-2 rounded-lg border border-line">
+                        <select value={rule.dayOfWeek} onChange={(e) => handlePricingRuleChange(idx, "dayOfWeek", e.target.value)} className="border border-line rounded px-1 py-1 text-xs">
                           {["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"].map(d => <option key={d} value={d}>{d.slice(0, 3)}</option>)}
                         </select>
-                        <input type="time" value={rule.startTime} onChange={(e) => handlePricingRuleChange(idx, "startTime", e.target.value)} className="border border-slate-200 rounded px-1 py-1 text-xs" />
-                        <input type="time" value={rule.endTime} onChange={(e) => handlePricingRuleChange(idx, "endTime", e.target.value)} className="border border-slate-200 rounded px-1 py-1 text-xs" />
-                        <input type="number" value={rule.hourlyRate} onChange={(e) => handlePricingRuleChange(idx, "hourlyRate", Number(e.target.value))} className="border border-slate-200 rounded px-1 py-1 text-xs w-full" />
+                        <input type="time" value={rule.startTime} onChange={(e) => handlePricingRuleChange(idx, "startTime", e.target.value)} className="border border-line rounded px-1 py-1 text-xs" />
+                        <input type="time" value={rule.endTime} onChange={(e) => handlePricingRuleChange(idx, "endTime", e.target.value)} className="border border-line rounded px-1 py-1 text-xs" />
+                        <input type="number" value={rule.hourlyRate} onChange={(e) => handlePricingRuleChange(idx, "hourlyRate", Number(e.target.value))} className="border border-line rounded px-1 py-1 text-xs w-full" />
                         <button type="button" onClick={() => removePricingRuleRow(idx)} className="text-rose-500 font-bold">&times;</button>
                       </div>
                     ))}
@@ -365,9 +365,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                <button type="button" onClick={() => setActiveTab("dashboard")} className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">Cancel</button>
-                <button type="submit" disabled={saving} className="px-8 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm">
+              <div className="flex justify-end gap-3 pt-6 border-t border-line">
+                <button type="button" onClick={() => setActiveTab("dashboard")} className="px-5 py-2.5 border border-line text-foreground rounded-xl text-sm font-semibold hover:bg-surface-2 transition-colors">Cancel</button>
+                <button type="submit" disabled={saving} className="px-8 py-2.5 bg-charcoal text-white rounded-xl text-sm font-semibold hover:bg-charcoal disabled:opacity-50 transition-colors shadow-sm">
                   {saving ? "Processing..." : activeTab === "create-venue" ? "Register Venue & Admin" : "Save Changes"}
                 </button>
               </div>
@@ -379,23 +379,23 @@ const AdminDashboard = () => {
               {/* Stats Cards */}
               <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
                 {[
-                  { label: "Total Users", value: stats.totalUsers, color: "text-slate-900" },
+                  { label: "Total Users", value: stats.totalUsers, color: "text-foreground" },
                   { label: "Total Venues", value: stats.totalVenues, color: "text-blue-600" },
                   { label: "Total Bookings", value: stats.totalBookings, color: "text-purple-600" },
-                  { label: "Total Revenue", value: formatCurrency(stats.totalRevenue), color: "text-emerald-600" }
+                  { label: "Total Revenue", value: formatCurrency(stats.totalRevenue), color: "text-pitch" }
                 ].map((stat, idx) => (
-                  <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                  <div key={idx} className="bg-surface border border-line rounded-2xl p-5 shadow-sm">
+                    <p className="text-sm font-medium text-muted">{stat.label}</p>
                     <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
                   </div>
                 ))}
               </div>
 
               {/* Revenue Bar Chart (recharts) */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Monthly Platform Revenue (Last 6 Months)</h2>
+              <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold tracking-tight text-foreground mb-5">Monthly Platform Revenue (Last 6 Months)</h2>
                 {chartData.length === 0 ? (
-                  <div className="h-72 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-400">
+                  <div className="h-72 border border-dashed border-line rounded-xl flex items-center justify-center text-muted">
                     No monthly revenue chart data available.
                   </div>
                 ) : (
@@ -436,14 +436,14 @@ const AdminDashboard = () => {
               {/* Lists Block */}
               <div className="grid gap-8 lg:grid-cols-2">
                 {/* Recent Users Table */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-w-0">
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Platform Users</h2>
+                <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm flex flex-col min-w-0">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground mb-5">Platform Users</h2>
                   {usersList.length === 0 ? (
-                    <p className="text-slate-500 text-sm py-8 text-center border border-dashed border-slate-200 rounded-xl">No users registered on the platform.</p>
+                    <p className="text-muted text-sm py-8 text-center border border-dashed border-line rounded-xl">No users registered on the platform.</p>
                   ) : (
                     <div className="overflow-x-auto flex-1">
-                      <table className="w-full text-left text-sm text-slate-600">
-                        <thead className="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50/50">
+                      <table className="w-full text-left text-sm text-muted">
+                        <thead className="text-xs uppercase tracking-wider text-muted border-b border-line bg-surface-2">
                           <tr>
                             <th className="py-3 px-4">User</th>
                             <th className="py-3 px-4">Role</th>
@@ -453,17 +453,17 @@ const AdminDashboard = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {usersList.map((usr) => (
-                            <tr key={usr.id} className="hover:bg-slate-50/50">
+                            <tr key={usr.id} className="hover:bg-surface-2">
                               <td className="py-3 px-4">
-                                <div className="font-semibold text-slate-900">{usr.name}</div>
-                                <div className="text-xs text-slate-500">{usr.email}</div>
+                                <div className="font-semibold text-foreground">{usr.name}</div>
+                                <div className="text-xs text-muted">{usr.email}</div>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="px-2 py-0.5 text-3xs font-semibold rounded-full uppercase tracking-wider bg-slate-100 text-slate-800">
+                                <span className="px-2 py-0.5 text-3xs font-semibold rounded-full uppercase tracking-wider bg-surface-2 text-foreground">
                                   {usr.role}
                                 </span>
                               </td>
-                              <td className="py-3 px-4 text-xs text-slate-500">
+                              <td className="py-3 px-4 text-xs text-muted">
                                 {new Date(usr.createdAt).toLocaleDateString("en-US", {
                                   month: "short",
                                   day: "numeric",
@@ -476,8 +476,8 @@ const AdminDashboard = () => {
                                   disabled={actionLoading || usr.id === user.id}
                                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-colors border ${
                                     usr.isActive
-                                      ? "bg-emerald-550 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
-                                      : "bg-rose-550 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100"
+                                      ? "bg-emerald-550 border-emerald-200 text-pitch-strong bg-pitch-soft hover:bg-pitch-soft"
+                                      : "bg-rose-550 border-rose-200 text-red-600 bg-red-500/10 hover:bg-rose-100"
                                   } disabled:opacity-50`}
                                 >
                                   {usr.isActive ? "Active" : "Banned"}
@@ -492,14 +492,14 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Recent Venues Table */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-w-0">
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-5">Registered Futsal Venues</h2>
+                <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm flex flex-col min-w-0">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground mb-5">Registered Futsal Venues</h2>
                   {venuesList.length === 0 ? (
-                    <p className="text-slate-500 text-sm py-8 text-center border border-dashed border-slate-200 rounded-xl">No venues registered on the platform.</p>
+                    <p className="text-muted text-sm py-8 text-center border border-dashed border-line rounded-xl">No venues registered on the platform.</p>
                   ) : (
                     <div className="overflow-x-auto flex-1">
-                      <table className="w-full text-left text-sm text-slate-600">
-                        <thead className="text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-slate-50/50">
+                      <table className="w-full text-left text-sm text-muted">
+                        <thead className="text-xs uppercase tracking-wider text-muted border-b border-line bg-surface-2">
                           <tr>
                             <th className="py-3 px-4">Venue</th>
                             <th className="py-3 px-4">Location</th>
@@ -510,12 +510,12 @@ const AdminDashboard = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {venuesList.map((vn) => (
-                            <tr key={vn.id} className="hover:bg-slate-50/50">
-                              <td className="py-3.5 px-4 font-semibold text-slate-900">{vn.name}</td>
-                              <td className="py-3.5 px-4 text-xs text-slate-500">{vn.city}</td>
+                            <tr key={vn.id} className="hover:bg-surface-2">
+                              <td className="py-3.5 px-4 font-semibold text-foreground">{vn.name}</td>
+                              <td className="py-3.5 px-4 text-xs text-muted">{vn.city}</td>
                               <td className="py-3.5 px-4">{vn.admin?.name || "No Admin"}</td>
                               <td className="py-3.5 px-4 text-center">
-                                <span className="inline-flex items-center justify-center h-6 w-8 font-bold text-slate-700 bg-slate-100 rounded-md text-xs">
+                                <span className="inline-flex items-center justify-center h-6 w-8 font-bold text-foreground bg-surface-2 rounded-md text-xs">
                                   {vn.courts?.length || 0}
                                 </span>
                               </td>
@@ -533,7 +533,7 @@ const AdminDashboard = () => {
                                   <button
                                     onClick={() => handleDeleteVenue(vn.id)}
                                     disabled={actionLoading}
-                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50"
+                                    className="p-1.5 text-rose-600 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
                                     title="Delete Venue"
                                   >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
