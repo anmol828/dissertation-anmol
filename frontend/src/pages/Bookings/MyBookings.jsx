@@ -41,8 +41,7 @@ const MyBookings = () => {
       <section className="rounded-[28px] border border-white/70 bg-white/85 p-8 shadow-[0_16px_48px_rgba(15,23,42,0.06)]">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">My Bookings</h1>
         <p className="mt-3 text-sm leading-7 text-slate-600">
-          Track your booked slots, review venue details, and cancel only when you are still
-          outside the 2-hour lock window.
+          Track your booked slots, review venue details, and cancel only when you are within the 2-hour window before start time.
         </p>
       </section>
 

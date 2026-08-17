@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const navBaseClass =
@@ -14,7 +14,13 @@ const navClassName = ({ isActive }) =>
 
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const roleLinks = [];
   if (user) {
@@ -96,7 +102,7 @@ const Layout = ({ children }) => {
                     </div>
                   </div>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-medium shadow-sm hover:bg-rose-700"
                   >
                     Logout
@@ -152,7 +158,7 @@ const Layout = ({ children }) => {
                     </div>
                     <button
                       onClick={() => {
-                        logout();
+                        handleLogout();
                         setMenuOpen(false);
                       }}
                       className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-medium shadow-sm hover:bg-rose-700"

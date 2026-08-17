@@ -146,11 +146,16 @@ router.post("/:id/cancel", authenticate, async (req, res, next) => {
 
     const now = new Date();
     const start = new Date(booking.startTime);
+    const diff = start.getTime() - now.getTime();
 
-    if (start.getTime() - now.getTime() < TWO_HOURS_MS) {
+    if (diff >= TWO_HOURS_MS) {
       return res
         .status(400)
-        .json({ message: "Cancellations are only allowed at least 2 hours before start time" });
+        .json({ message: "Cancellations are not allowed more than 2 hours before start time" });
+    }
+
+    if (diff < 0) {
+      return res.status(400).json({ message: "Cannot cancel a past booking" });
     }
 
     const updated = await prisma.booking.update({

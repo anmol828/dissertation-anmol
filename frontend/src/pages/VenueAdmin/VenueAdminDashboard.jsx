@@ -31,9 +31,10 @@ const VenueAdminDashboard = () => {
   const [chartData, setChartData] = useState([]);
   const [todayBookings, setTodayBookings] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
+  const [homeTeams, setHomeTeams] = useState([]);
 
   // Sub-views state for inline quick actions
-  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, bookings, courts, pricing, edit-venue
+  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, bookings, courts, pricing, edit-venue, home-teams
   const [saving, setSaving] = useState(false);
 
   // Forms
@@ -49,14 +50,24 @@ const VenueAdminDashboard = () => {
     mapsUrl: ""
   });
 
+  const initialHomeTeamForm = {
+    name: "",
+    skillLevel: "INTERMEDIATE",
+    players: [{ name: "" }],
+    availability: [{ dayOfWeek: "MONDAY", startTime: "18:00", endTime: "20:00" }]
+  };
+  const [homeTeamForm, setHomeTeamForm] = useState(initialHomeTeamForm);
+  const [editingHomeTeamId, setEditingHomeTeamId] = useState(null);
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const [statsRes, bookingsRes] = await Promise.all([
+      const [statsRes, bookingsRes, homeTeamsRes] = await Promise.all([
         api.get("/venues/my/stats"),
-        api.get("/venues/my/bookings")
+        api.get("/venues/my/bookings"),
+        api.get("/home-teams/mine")
       ]);
 
       const data = statsRes.data;
@@ -65,6 +76,7 @@ const VenueAdminDashboard = () => {
       setChartData(data.revenueChartData || []);
       setTodayBookings(data.todayBookings || []);
       setAllBookings(bookingsRes.data.bookings || []);
+      setHomeTeams(homeTeamsRes.data.teams || []);
 
       if (data.venue) {
         setVenueForm({
@@ -163,6 +175,114 @@ const VenueAdminDashboard = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleHomeTeamSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      if (editingHomeTeamId) {
+        await api.put(`/home-teams/${editingHomeTeamId}`, {
+          ...homeTeamForm,
+          venueId: venue.id
+        });
+        setSuccess("Home team updated successfully!");
+      } else {
+        await api.post("/home-teams", {
+          ...homeTeamForm,
+          venueId: venue.id
+        });
+        setSuccess("Home team created successfully!");
+      }
+
+      setHomeTeamForm(initialHomeTeamForm);
+      setEditingHomeTeamId(null);
+      await loadDashboardData();
+      setActiveTab("home-teams");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save home team.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditHomeTeamClick = (team) => {
+    setHomeTeamForm({
+      name: team.name,
+      skillLevel: team.skillLevel,
+      players: team.players.map((p) => ({ name: p.name })),
+      availability: team.availability.map((a) => ({
+        dayOfWeek: a.dayOfWeek,
+        startTime: a.startTime,
+        endTime: a.endTime
+      }))
+    });
+    setEditingHomeTeamId(team.id);
+    // Scroll to form or just let user see it if it's below
+  };
+
+  const handleDeleteHomeTeam = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this home team?")) return;
+    try {
+      setSaving(true);
+      await api.delete(`/home-teams/${id}`);
+      setSuccess("Home team deleted successfully.");
+      await loadDashboardData();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete home team.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addPlayerRow = () => {
+    setHomeTeamForm((prev) => ({
+      ...prev,
+      players: [...prev.players, { name: "" }]
+    }));
+  };
+
+  const removePlayerRow = (index) => {
+    setHomeTeamForm((prev) => ({
+      ...prev,
+      players: prev.players.filter((_, idx) => idx !== index)
+    }));
+  };
+
+  const handlePlayerChange = (index, value) => {
+    setHomeTeamForm((prev) => {
+      const nextPlayers = [...prev.players];
+      nextPlayers[index] = { name: value };
+      return { ...prev, players: nextPlayers };
+    });
+  };
+
+  const addHomeTeamAvailabilityRow = () => {
+    setHomeTeamForm((prev) => ({
+      ...prev,
+      availability: [
+        ...prev.availability,
+        { dayOfWeek: "MONDAY", startTime: "18:00", endTime: "20:00" }
+      ]
+    }));
+  };
+
+  const removeHomeTeamAvailabilityRow = (index) => {
+    setHomeTeamForm((prev) => ({
+      ...prev,
+      availability: prev.availability.filter((_, idx) => idx !== index)
+    }));
+  };
+
+  const handleHomeTeamAvailabilityChange = (index, field, value) => {
+    setHomeTeamForm((prev) => {
+      const nextAvailability = [...prev.availability];
+      nextAvailability[index] = { ...nextAvailability[index], [field]: value };
+      return { ...prev, availability: nextAvailability };
+    });
   };
 
   const handlePricingRuleChange = (index, field, value) => {
@@ -327,49 +447,69 @@ const VenueAdminDashboard = () => {
 
           {/* Sub-View: Add Court */}
           {activeTab === "courts" && (
-            <form onSubmit={handleAddCourtSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-              <h2 className="text-xl font-bold text-slate-900">Add Futsal Court</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Court Name</label>
-                  <input
-                    type="text"
-                    value={courtForm.name}
-                    onChange={(e) => setCourtForm({ ...courtForm, name: e.target.value })}
-                    placeholder="e.g. Court A (Indoor)"
-                    required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                  />
+            <div className="space-y-6">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <h2 className="text-xl font-bold text-slate-900">Existing Courts</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {venue?.courts?.map((court) => (
+                    <div key={court.id} className="p-4 border border-slate-100 rounded-xl bg-slate-50/50 flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-slate-900">{court.name}</p>
+                        <p className="text-xs text-slate-500">{court.isActive ? "Active" : "Inactive"}</p>
+                      </div>
+                      <div className={`h-2.5 w-2.5 rounded-full ${court.isActive ? "bg-emerald-500" : "bg-slate-300"}`}></div>
+                    </div>
+                  ))}
+                  {venue?.courts?.length === 0 && (
+                    <p className="text-sm text-slate-500 col-span-full py-4 text-center border border-dashed border-slate-200 rounded-xl">No courts added yet.</p>
+                  )}
                 </div>
-                <div className="flex items-end pb-2">
-                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+              </div>
+
+              <form onSubmit={handleAddCourtSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <h2 className="text-xl font-bold text-slate-900">Add Futsal Court</h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Court Name</label>
                     <input
-                      type="checkbox"
-                      checked={courtForm.isActive}
-                      onChange={(e) => setCourtForm({ ...courtForm, isActive: e.target.checked })}
-                      className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                      type="text"
+                      value={courtForm.name}
+                      onChange={(e) => setCourtForm({ ...courtForm, name: e.target.value })}
+                      placeholder="e.g. Court A (Indoor)"
+                      required
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
                     />
-                    Mark Court as Active
-                  </label>
+                  </div>
+                  <div className="flex items-end pb-2">
+                    <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={courtForm.isActive}
+                        onChange={(e) => setCourtForm({ ...courtForm, isActive: e.target.checked })}
+                        className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                      />
+                      Mark Court as Active
+                    </label>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("dashboard")}
-                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
-                >
-                  {saving ? "Adding..." : "Add Court"}
-                </button>
-              </div>
-            </form>
+                <div className="flex gap-3 justify-end border-t border-slate-100 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("dashboard")}
+                    className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+                  >
+                    {saving ? "Adding..." : "Add Court"}
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
 
           {/* Sub-View: Edit Pricing Rules */}
@@ -515,6 +655,206 @@ const VenueAdminDashboard = () => {
             </div>
           )}
 
+          {/* Sub-View: Home Teams */}
+          {activeTab === "home-teams" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-slate-900">Your Venue's Home Teams</h2>
+                  <p className="text-sm text-slate-500">{homeTeams.length} teams registered</p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {homeTeams.map((team) => (
+                    <div key={team.id} className="border border-slate-100 rounded-2xl p-5 bg-slate-50/50 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">
+                            {team.name[0]}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-900">{team.name}</h3>
+                            <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{team.skillLevel}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditHomeTeamClick(team)}
+                            className="text-blue-500 hover:text-blue-700 transition-colors"
+                            title="Edit Team"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteHomeTeam(team.id)}
+                            className="text-rose-500 hover:text-rose-700 transition-colors"
+                            title="Delete Team"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Players</p>
+                        <div className="flex flex-wrap gap-2">
+                          {team.players?.map((p) => (
+                            <span key={p.id} className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 shadow-sm">
+                              {p.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Weekly Availability</p>
+                        <div className="space-y-1">
+                          {team.availability?.map((a) => (
+                            <p key={a.id} className="text-xs text-slate-600 font-medium">
+                              {a.dayOfWeek}: {a.startTime} - {a.endTime}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {homeTeams.length === 0 && (
+                    <div className="md:col-span-2 py-10 text-center border border-dashed border-slate-200 rounded-2xl bg-white">
+                      <p className="text-slate-400 font-medium">No home teams created yet.</p>
+                      <p className="text-xs text-slate-400 mt-1">Register your venue's local squads to help players find matches.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <form onSubmit={handleHomeTeamSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="border-b border-slate-100 pb-4">
+                  <h2 className="text-xl font-bold text-slate-900">
+                    {editingHomeTeamId ? "Update Home Team" : "Create New Home Team"}
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {editingHomeTeamId ? "Modify the details of your squad." : "Add a squad that plays regularly at your venue."}
+                  </p>
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Team Name</label>
+                      <input
+                        type="text"
+                        value={homeTeamForm.name}
+                        onChange={(e) => setHomeTeamForm({ ...homeTeamForm, name: e.target.value })}
+                        required
+                        placeholder="e.g. Arena 5 Legends"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Team Skill Level</label>
+                      <select
+                        value={homeTeamForm.skillLevel}
+                        onChange={(e) => setHomeTeamForm({ ...homeTeamForm, skillLevel: e.target.value })}
+                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none"
+                      >
+                        <option value="BEGINNER">Beginner</option>
+                        <option value="INTERMEDIATE">Intermediate</option>
+                        <option value="ADVANCED">Advanced</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Weekly Schedule</label>
+                        <button type="button" onClick={addHomeTeamAvailabilityRow} className="text-xs font-bold text-blue-600 hover:underline">+ Add Slot</button>
+                      </div>
+                      <div className="space-y-2">
+                        {homeTeamForm.availability.map((slot, idx) => (
+                          <div key={idx} className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <select
+                              value={slot.dayOfWeek}
+                              onChange={(e) => handleHomeTeamAvailabilityChange(idx, "dayOfWeek", e.target.value)}
+                              className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-white"
+                            >
+                              {["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"].map(d => <option key={d} value={d}>{d.slice(0,3)}</option>)}
+                            </select>
+                            <input
+                              type="time"
+                              value={slot.startTime}
+                              onChange={(e) => handleHomeTeamAvailabilityChange(idx, "startTime", e.target.value)}
+                              className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-white"
+                            />
+                            <input
+                              type="time"
+                              value={slot.endTime}
+                              onChange={(e) => handleHomeTeamAvailabilityChange(idx, "endTime", e.target.value)}
+                              className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none bg-white"
+                            />
+                            <button type="button" onClick={() => removeHomeTeamAvailabilityRow(idx)} className="text-rose-500 font-bold p-1">&times;</button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Players List</label>
+                      <button type="button" onClick={addPlayerRow} className="text-xs font-bold text-blue-600 hover:underline">+ Add Player</button>
+                    </div>
+                    <div className="grid gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                      {homeTeamForm.players.map((p, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={p.name}
+                            onChange={(e) => handlePlayerChange(idx, e.target.value)}
+                            required
+                            placeholder={`Player ${idx + 1} Name`}
+                            className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePlayerRow(idx)}
+                            disabled={homeTeamForm.players.length === 1}
+                            className="text-rose-500 font-bold p-1 disabled:opacity-30"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("dashboard");
+                      setHomeTeamForm(initialHomeTeamForm);
+                      setEditingHomeTeamId(null);
+                    }}
+                    className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    {editingHomeTeamId ? "Cancel Edit" : "Cancel"}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-8 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm"
+                  >
+                    {saving ? "Processing..." : editingHomeTeamId ? "Save Changes" : "Register Home Team"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
           {/* Core Dashboard Overview */}
           {activeTab === "dashboard" && (
             <div className="space-y-8">
@@ -627,6 +967,13 @@ const VenueAdminDashboard = () => {
                       className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
                     >
                       <span>Configure Pricing Rules</span>
+                      <span className="text-slate-400">&rarr;</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("home-teams")}
+                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 font-semibold text-sm text-slate-900 transition-colors flex items-center justify-between"
+                    >
+                      <span>Manage Home Teams</span>
                       <span className="text-slate-400">&rarr;</span>
                     </button>
                     <button

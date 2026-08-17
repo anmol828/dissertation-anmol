@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "postinstall": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
@@ -23,8 +24,10 @@
     "multer": "^2.1.1"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.0",
-    "prisma": "^6.0.0"
+    "prisma": "^6.0.0",
+    "supertest": "^7.0.0"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

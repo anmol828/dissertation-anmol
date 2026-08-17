@@ -178,7 +178,9 @@ router.get(
       const venue = await prisma.venue.findFirst({
         where: req.user.role === "ADMIN" ? {} : { adminId: req.user.id },
         include: {
-          courts: true
+          courts: true,
+          pricingRules: true,
+          galleryImages: true
         }
       });
       if (!venue) {
@@ -458,21 +460,23 @@ router.put(
           }
         });
 
-        await tx.venueImage.deleteMany({
-          where: { venueId: id }
-        });
-
-        if (Array.isArray(galleryImages) && galleryImages.length > 0) {
-          await tx.venueImage.createMany({
-            data: galleryImages
-              .filter((image) => image.imageUrl?.trim())
-              .map((image, index) => ({
-                venueId: id,
-                imageUrl: image.imageUrl.trim(),
-                caption: image.caption?.trim() || null,
-                sortOrder: index
-              }))
+        if (Array.isArray(galleryImages)) {
+          await tx.venueImage.deleteMany({
+            where: { venueId: id }
           });
+
+          if (galleryImages.length > 0) {
+            await tx.venueImage.createMany({
+              data: galleryImages
+                .filter((image) => image.imageUrl?.trim())
+                .map((image, index) => ({
+                  venueId: id,
+                  imageUrl: image.imageUrl.trim(),
+                  caption: image.caption?.trim() || null,
+                  sortOrder: index
+                }))
+            });
+          }
         }
 
         await tx.venuePricingRule.deleteMany({

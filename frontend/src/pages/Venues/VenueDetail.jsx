@@ -216,9 +216,20 @@ const VenueDetail = () => {
             <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950">
               {venue.name}
             </h1>
-            <p className="mt-2 text-sm text-slate-500">
-              {venue.address}, {venue.city}
-            </p>
+            {venue.mapsUrl ? (
+              <a
+                href={venue.mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 block text-sm text-slate-500 hover:text-slate-900 hover:underline"
+              >
+                {venue.address}, {venue.city}
+              </a>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500">
+                {venue.address}, {venue.city}
+              </p>
+            )}
             {venue.description && (
               <p className="mt-5 text-sm leading-7 text-slate-600">{venue.description}</p>
             )}
